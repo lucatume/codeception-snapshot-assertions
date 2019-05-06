@@ -10,10 +10,6 @@ php:
   - '7.2'
   - '7.3'
   - 'nightly'
-env:
-  - CODECEPTION_VERSION="2.5.0"
-  - CODECEPTION_VERSION="^2.5"
-  - CODECEPTION_VERSION="^3.0"
 
 matrix:
   fast_finish: true
