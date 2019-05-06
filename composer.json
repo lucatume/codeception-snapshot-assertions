@@ -1,0 +1,30 @@
+{
+    "name": "lucatume/codeception-snapshot-assertions",
+    "description": "Snapshot assertions sugar for Codeception.",
+    "type": "library",
+    "license": "GPL-2.0+",
+    "authors": [
+        {
+            "name": "theAverageDev (Luca Tumedei)",
+            "email": "luca@theaveragedev.com"
+        }
+    ],
+    "require": {
+        "ext-dom": "*",
+        "codeception/codeception": ">=2.5.0",
+        "gajus/dindent": "^2.0"
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "*"
+    },
+    "autoload": {
+        "psr-4": {
+            "tad\\Codeception\\SnapshotAssertions\\": "src"
+        }
+    },
+    "autoload-dev": {
+        "psr-0": {
+            "tad\\Codeception\\SnapshotAssertions" : "tests/unit"
+        }
+    }
+}
