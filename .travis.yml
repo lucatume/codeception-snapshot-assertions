@@ -21,7 +21,7 @@ cache:
     - $HOME/.composer/cache/files
 
 install:
-  - travis_retry composer require codeception/codeception:${CODECEPTION_VERSION}
+  - travis_retry composer update
 
 script:
   - vendor/bin/codecept run
