@@ -10,6 +10,7 @@ namespace tad\Codeception\SnapshotAssertions;
 use Codeception\Exception\ContentNotFound;
 use Codeception\Snapshot;
 use Codeception\Util\Debug;
+use Codeception\Util\ReflectionHelper;
 use GuzzleHttp\Promise\RejectionException;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -93,8 +94,9 @@ class AbstractSnapshot extends Snapshot
             if ($backtrace[0]['object'] instanceof TestCase) {
                 /** @var TestCase $testCase */
                 $testCase = $backtrace[0]['object'];
-                if ((string)$testCase->dataName() !== '') {
-                    $dataSetFrag = '__'.$testCase->dataName();
+                $dataName = $this->getDataName($testCase);
+                if ($dataName !== '') {
+                    $dataSetFrag = '__'.$dataName;
                 }
             }
             $fileName = sprintf(
@@ -294,5 +296,31 @@ class AbstractSnapshot extends Snapshot
     protected function printDebug($message)
     {
         Debug::debug(get_class($this).': '.$message);
+    }
+    /**
+ * Returns the data name taking care of doing so in a way that is compatible with different PHPUnit versions.
+ *
+ * @param  TestCase|\PHPUnit_Framework_TestCase  $testCase The current test case.
+ *
+ * @return string The data name if available or an empty string if not available.
+ */
+    protected function getDataName(TestCase $testCase)
+    {
+        if (method_exists($testCase, 'dataName')) {
+            return (string)$testCase->dataName();
+        }
+
+        $candidates = array_reverse(class_parents($testCase));
+        $testCaseClass = get_class($testCase);
+        $candidates[$testCaseClass] = $testCaseClass;
+        foreach (array_reverse($candidates) as $class) {
+            try {
+                $read = (string)ReflectionHelper::readPrivateProperty($testCase, 'dataName', $class);
+            } catch (\ReflectionException $e) {
+                continue;
+            }
+
+            return $read;
+        }
     }
 }
