@@ -167,4 +167,32 @@ class SnapshotAssertionsTest extends BaseTestCase
         $jsonSnapshot->snapshotPutContents($json);
         $this->assertMatchesJsonSnapshot($json);
     }
+
+    /**
+     * It should allow making code assertions
+     *
+     * @test
+     */
+    public function should_allow_making_code_assertions()
+    {
+        $code = '<?php echo "foo";';
+        $codeSnapshot = new CodeSnapshot($code);
+        $this->unlinkAfter[] = $codeSnapshot->snapshotFileName();
+        $codeSnapshot->snapshotPutContents($code);
+        $this->assertMatchesCodeSnapshot($code);
+    }
+
+    /**
+     * It should allow making code assertions specifying extension
+     *
+     * @test
+     */
+    public function should_allow_making_code_assertions_specifying_extension()
+    {
+        $code = 'let foo = bar';
+        $codeSnapshot = new CodeSnapshot($code, 'js');
+        $this->unlinkAfter[] = $codeSnapshot->snapshotFileName();
+        $codeSnapshot->snapshotPutContents($code);
+        $this->assertMatchesCodeSnapshot($code);
+    }
 }
