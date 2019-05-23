@@ -39,9 +39,30 @@ trait SnapshotAssertions
         $htmlSnapshot->assert();
     }
 
+    /**
+     * Asserts the current JSON string matches the one stored in the snapshot file.
+     *
+     * If the snapshot file is not present the assertion will be skipped and the snapshot file will be generated.
+     *
+     * @param  string  $current  The current JSON string.
+     */
     protected function assertMatchesJsonSnapshot($current)
     {
         $jsonSnapshot = new JsonSnapshot($current);
         $jsonSnapshot->assert();
+    }
+
+    /**
+     * Asserts the current code matches the one stored in the snapshot file.
+     *
+     * If the snapshot file is not present the assertion will be skipped and the snapshot file will be generated.
+     *
+     * @param  string  $current  The current code.
+     * @param string $extension The file extension to use for the code, without the trailing dot.
+     */
+    protected function assertMatchesCodeSnapshot($current, $extension = 'php')
+    {
+        $codeSnapshot = new CodeSnapshot($current, $extension);
+        $codeSnapshot->assert();
     }
 }
