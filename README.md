@@ -56,6 +56,7 @@ The package supports the following type of assertions:
 1. string snapshot assertions, to compare a string to a string snapshot with the `assertMatchesStringSnapshot` method.
 2. HTML snapshot assertions, to compare an HTML fragment to an HTML fragment snapshot  with the `assertMatchesHtmlSnapshot` method.
 3. JSON snapshot assertions, to compare a JSON string to a stored JSON snapshot with the `assertMatchesJsonSnapshot` method.
+3. Code snapshot assertions, to compare code to a stored code snapshot with the `assertMatchesCodeSnapshot` method.
 
 The first time an `assert...` method is called the library will generate a snapshot file in the same directory as the tests, in the `__snapshots__` folder.  
 As an example if the following test case lives in the `tests/Output/WidgetTest.php` file then when the `testDefaultContent` method runs the library will generate the `tests/Output/WidgetTest__testDefaultContent__0.snapshot.html`  file; you can regenerate failing snapshots by running Codeception tests in debug mode (using the `--debug` flag of the `run` command).
@@ -63,6 +64,7 @@ As an example if the following test case lives in the `tests/Output/WidgetTest.p
 ### String assertions
 This kind of assertion is useful when the output of a method is a plain string.  
 The snapshot produced by this kind of assertion will have the `.snapshot.txt` file extension.  
+The method used to make string snapshot assertions is `tad\Codeception\SnapshotAssertions\SnapshotAssertions::assertStringSnapshot()`.  
 Usage example;
 
 ```php
@@ -88,6 +90,7 @@ class ErrorMessageTest extends Codeception\TestCase\Test
 ### HTML assertions
 This kind of assertion is useful when the output of a method is an HTML document or HTML fragment.  
 The snapshot produced by this kind of assertion will have the `.snapshot.html` file extension.  
+The method used to make HTML snapshot assertions is `tad\Codeception\SnapshotAssertions\SnapshotAssertions::assertHtmlSnapshot()`.  
 Usage example;
 
 ```php
@@ -113,8 +116,8 @@ class WidgetTest extends Codeception\TestCase\Test
 ### JSON assertions
 This kind of assertion is useful when the output of a method is a JSON string.  
 The snapshot produced by this kind of assertion will have the `.snapshot.html` file extension.  
-The method used to make JSON snapshot assertions is ````
-Usage example;
+The method used to make JSON snapshot assertions is `tad\Codeception\SnapshotAssertions\SnapshotAssertions::assertJsonSnapshot()`.  
+Usage example:  
 
 ```php
 <?php
@@ -145,6 +148,32 @@ class ApiTest extends Codeception\TestCase\Test
         $api = new API() ;
 
         $this->assertMatchesJsonSnapshot($api->handle($request));
+    }
+}
+```
+
+### Code assertions
+This kind of assertion is useful when the output of a method is code.  
+The snapshot produced by this kind of assertion will have the `.snapshot.php` file extension by default, but you can specify an extenstion to use for the snapshot.  
+The method used to make code snapshot assertions is `tad\Codeception\SnapshotAssertions\SnapshotAssertions::assertCodeSnapshot()`.  
+Usage example;
+
+```php
+<?php
+class ApiTest extends Codeception\TestCase\Test
+{
+    use tad\Codeception\SnapshotAssertions\SnapshotAssertions;
+    
+    public function testGoodCode(){
+		$generator = new CodeGenerator();
+		$code = $generator->produce('phpCode');
+        $this->assertMatchesJsonSnapshot($code);
+    }
+
+    public function testMissingAuthResponse(){
+		$generator = new CodeGenerator();
+		$code = $generator->produce('jsCode');
+        $this->assertMatchesCodeSnapshot($code);
     }
 }
 ```
