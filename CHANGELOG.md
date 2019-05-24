@@ -6,12 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.0] - 2019-05-24
+### Added
+- code snapshot assertions class and trait methods
+
 ## [0.1.0] - 2019-05-07
 ### Added
 - this changelog file
 - the first version of the package and README.md
 
-[Unreleased]: https://github.com/olivierlacan/keep-a-changelog/compare/0.1.0...HEAD
-[0.1.0]: https://github.com/olivierlacan/keep-a-changelog/releases/tag/0.1.0
+[Unreleased]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.2.0...HEAD
+[0.1.0]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.1.0...0.2.0
+[0.1.0]: https://github.com/lucatume/codeception-snapshot-assertions/releases/tag/0.1.0
 
 
