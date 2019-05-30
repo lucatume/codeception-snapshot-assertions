@@ -12,6 +12,7 @@ use Codeception\Snapshot;
 use Codeception\Util\Debug;
 use Codeception\Util\ReflectionHelper;
 use GuzzleHttp\Promise\RejectionException;
+use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
 
