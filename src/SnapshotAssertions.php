@@ -65,4 +65,10 @@ trait SnapshotAssertions
         $codeSnapshot = new CodeSnapshot($current, $extension);
         $codeSnapshot->assert();
     }
+
+    protected function assertMatchesDirectorySnapshot($current)
+    {
+        $dirSnapshot = new DirectorySnapshot($current);
+        $dirSnapshot->assert();
+    }
 }

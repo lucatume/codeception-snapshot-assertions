@@ -203,7 +203,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @return mixed The prepared snapshot contents.
      */
-    protected function prepareSnapshotForDump()
+    public function prepareSnapshotForDump()
     {
         return $this->dataSet;
     }
