@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.2.2] - 2019-09-21
+### Added
+- directory snapshot
+
 ## [0.2.1] - 2019-05-24
 ### Fixed
 - snapshot regeneration when running tests in debug mode
@@ -19,9 +23,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - this changelog file
 - the first version of the package and README.md
 
-[Unreleased]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.2.1...HEAD
-[0.2.1]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.2.0...0.2.1
-[0.2.0]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.1.0...0.2.0
 [0.1.0]: https://github.com/lucatume/codeception-snapshot-assertions/releases/tag/0.1.0
-
+[0.2.0]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.1.0...0.2.0
+[0.2.1]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.2.0...0.2.1
+[0.2.2]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.2.1...0.2.2
+[Unreleased]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.2.2...HEAD
 
