@@ -3,8 +3,8 @@ name: CI
 on: push
 
 jobs:
-  php56:
-    name: Test on PHP 5.6
+  php_56_and_highest_codeception:
+    name: PHP 5.6
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -12,8 +12,38 @@ jobs:
       - uses: docker://php:5.6-alpine
         with:
           args: vendor/bin/codecept run
+  php_56_and_codeception_2_5:
+    name: PHP 5.6 and Codeception ^2.5
+    runs-on: ubuntu-latest
+    steps:
+      - uses: MilesChou/composer-action/5.6@master
+        with:
+          args: require codeception/codeception:^2.5
+      - uses: docker://php:5.6-alpine
+        with:
+          args: vendor/bin/codecept run
+  php_56_and_codeception_3:
+    name: PHP 5.6 and Codeception ^3.0
+    runs-on: ubuntu-latest
+    steps:
+      - uses: MilesChou/composer-action/5.6@master
+        with:
+          args: require codeception/codeception:^3.0
+      - uses: docker://php:5.6-alpine
+        with:
+          args: vendor/bin/codecept run
+  php_56_and_codeception_4:
+    name: PHP 5.6 and Codeception ^4.0
+    runs-on: ubuntu-latest
+    steps:
+      - uses: MilesChou/composer-action/5.6@master
+        with:
+          args: require codeception/codeception:^4.0
+      - uses: docker://php:5.6-alpine
+        with:
+          args: vendor/bin/codecept run
   php70:
-    name: Test on PHP 7.0
+    name: PHP 7.0
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -22,7 +52,7 @@ jobs:
         with:
           args: vendor/bin/codecept run
   php71:
-    name: Test on PHP 7.1
+    name: PHP 7.1
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -31,7 +61,7 @@ jobs:
         with:
           args: vendor/bin/codecept run
   php72:
-    name: Test on PHP 7.2
+    name: PHP 7.2
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -40,7 +70,7 @@ jobs:
         with:
           args: vendor/bin/codecept run
   php73:
-    name: Test on PHP 7.3
+    name: PHP 7.3
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
@@ -49,7 +79,7 @@ jobs:
         with:
           args: vendor/bin/codecept run
   php74:
-    name: Test on PHP 7.4
+    name: PHP 7.4
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
