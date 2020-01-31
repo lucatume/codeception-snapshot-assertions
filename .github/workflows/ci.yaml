@@ -2,89 +2,17 @@ name: CI
 
 on: push
 
+strategy:
+  matrix:
+    php: [5.6, 7.0, 7.1, 7.2, 7.3]
+
 jobs:
-  php_56_and_highest_codeception:
-    name: PHP 5.6
+  codeception:
+    name: PHP ${{ matrix.php }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - uses: MilesChou/composer-action/5.6/install@master
-      - uses: docker://php:5.6-alpine
-        with:
-          args: vendor/bin/codecept run
-  php_56_and_codeception_2_5:
-    name: PHP 5.6 and Codeception ^2.5
-    runs-on: ubuntu-latest
-    steps:
-      - uses: MilesChou/composer-action/5.6@master
-        with:
-          args: require codeception/codeception:^2.5
-      - uses: docker://php:5.6-alpine
-        with:
-          args: vendor/bin/codecept run
-  php_56_and_codeception_3:
-    name: PHP 5.6 and Codeception ^3.0
-    runs-on: ubuntu-latest
-    steps:
-      - uses: MilesChou/composer-action/5.6@master
-        with:
-          args: require codeception/codeception:^3.0
-      - uses: docker://php:5.6-alpine
-        with:
-          args: vendor/bin/codecept run
-  php_56_and_codeception_4:
-    name: PHP 5.6 and Codeception ^4.0
-    runs-on: ubuntu-latest
-    steps:
-      - uses: MilesChou/composer-action/5.6@master
-        with:
-          args: require codeception/codeception:^4.0
-      - uses: docker://php:5.6-alpine
-        with:
-          args: vendor/bin/codecept run
-  php70:
-    name: PHP 7.0
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - uses: MilesChou/composer-action/7.0/install@master
-      - uses: docker://php:7.0-alpine
-        with:
-          args: vendor/bin/codecept run
-  php71:
-    name: PHP 7.1
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - uses: MilesChou/composer-action/7.1/install@master
-      - uses: docker://php:7.1-alpine
-        with:
-          args: vendor/bin/codecept run
-  php72:
-    name: PHP 7.2
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - uses: MilesChou/composer-action/7.2/install@master
-      - uses: docker://php:7.2-alpine
-        with:
-          args: vendor/bin/codecept run
-  php73:
-    name: PHP 7.3
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      - uses: MilesChou/composer-action/7.3/install@master
-      - uses: docker://php:7.3-alpine
-        with:
-          args: vendor/bin/codecept run
-  php74:
-    name: PHP 7.4
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@master
-      # Install on 7.3 as a 7.4 actions is still not available.
-      - uses: MilesChou/composer-action/7.3/install@master
-      - uses: docker://php:7.4-alpine
+      - uses: MilesChou/composer-action/${{ matrix.php }}/install@master
+      - uses: docker://php:${{ matrix.php }}-alpine
         with:
           args: vendor/bin/codecept run
