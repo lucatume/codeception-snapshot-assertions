@@ -2,7 +2,7 @@
     "name": "lucatume/codeception-snapshot-assertions",
     "description": "Snapshot assertions sugar for Codeception.",
     "type": "library",
-    "license": "GPL-2.0+",
+    "license": "MIT",
     "authors": [
         {
             "name": "theAverageDev (Luca Tumedei)",
