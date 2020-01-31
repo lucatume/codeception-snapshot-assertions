@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-18.04
     steps:
       - name: composer update
-        uses: MilesChou/composer-action/5.6/composer-action@master
-          with:
-            args: update
-      - name: codecept run test
-        uses: MilesChou/composer-action/5.6/composer-action@master
-          with:
-            args: run test
+        uses: MilesChou/composer-action/5.6/@master
+        with:
+          args: update
+      - name: composer run test
+        uses: MilesChou/composer-action/5.6/@master
+        with:
+          args: run test
