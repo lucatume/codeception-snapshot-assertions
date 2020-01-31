@@ -99,14 +99,14 @@ class DirectorySnapshotTest extends BaseTestCase
         $fileTwo = $dir . '/fileTwo';
         $fileThree = $dir . '/fileThree';
         $fileOneContents = 'I am file one';
-        file_put_contents($fileOne,$fileOneContents);
+        file_put_contents($fileOne, $fileOneContents);
         $fileTwoContents = <<< TXT
 I am file two.
 A multiline file.
 With a generated, time-dependant hash.
 // [HASH] $hash
 TXT;
-        file_put_contents($fileTwo,$fileTwoContents);
+        file_put_contents($fileTwo, $fileTwoContents);
         file_put_contents($fileThree, 'Just a normal file.');
         $dataVisitor = static function ($expected, $current, $pathName) {
             if (strpos($pathName, 'fileOne')) {
@@ -135,14 +135,14 @@ TXT;
 
         // Now update the hash in file two.
         $newHash = md5(microtime());
-        $this->assertNotEquals($hash,$newHash);
+        $this->assertNotEquals($hash, $newHash);
         $fileTwoContents = <<< TXT
 I am file two.
 A multiline file.
 With a generated, time-dependant hash.
 // [HASH] $newHash
 TXT;
-        file_put_contents($fileTwo,$fileTwoContents);
+        file_put_contents($fileTwo, $fileTwoContents);
 
         $secondSnapshot =  new DirectorySnapshot($dir);
         $secondSnapshot->setSnapshotFileName($snapshotFileName);

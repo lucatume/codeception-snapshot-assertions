@@ -12,7 +12,7 @@ class BaseVisitorTest extends BaseTestCase
     public function should_allow_adding_a_visitor()
     {
         $removeHashEntry = static function ($jsonString) {
-            return json_encode(array_diff_key(json_decode($jsonString,true),array_flip(['hash'])));
+            return json_encode(array_diff_key(json_decode($jsonString, true), array_flip(['hash'])));
         };
         $dataVisitor = static function ($expected, $current) use ($removeHashEntry) {
             return array_map($removeHashEntry, [$expected, $current]);
