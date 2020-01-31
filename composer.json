@@ -26,8 +26,5 @@
         "psr-0": {
             "tad\\Codeception\\SnapshotAssertions" : "tests/unit"
         }
-    },
-    "scripts": {
-        "test": "vendor/bin/codecept run"
     }
 }

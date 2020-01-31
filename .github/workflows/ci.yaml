@@ -7,11 +7,11 @@ jobs:
     name: Test on PHP 5.6
     runs-on: ubuntu-18.04
     steps:
-      - name: composer update
-        uses: MilesChou/composer-action/5.6/@master
+      - name: Composer install
+        uses: MilesChou/composer-action/5.6/install@master
         with:
-          args: update
-      - name: composer run test
-        uses: MilesChou/composer-action/5.6/@master
+          args: install
+      - name: Codeception testing
+        uses: docker://php:5.6
         with:
-          args: run test
+          args: vendor/bin/codecept/run
