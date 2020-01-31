@@ -11,7 +11,6 @@ use Codeception\Exception\ContentNotFound;
 use Codeception\Snapshot;
 use Codeception\Util\Debug;
 use Codeception\Util\ReflectionHelper;
-use GuzzleHttp\Promise\RejectionException;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
 use RuntimeException;
@@ -42,6 +41,13 @@ class AbstractSnapshot extends Snapshot
      * @var string
      */
     protected $current = '';
+
+    /**
+     * The callback that will be called on each data entry of the snapshot.
+     *
+     * @var callable
+     */
+    protected $dataVisitor;
 
     /**
      * Snapshot constructor.
@@ -183,8 +189,9 @@ class AbstractSnapshot extends Snapshot
 
     /**
      * Saves the snapshot contents to the snapshot file.
-     * @throws RejectionException If there's an issue while building the snapshot filename.
-     * @throws RuntimeException If the snapshots folder cannot be created.
+     * @throws \RejectionException If there's an issue while building the snapshot filename.
+     * @throws \RuntimeException If the snapshots folder cannot be created.
+     * @throws \ReflectionException If there's an issue building the file name from the test case.
      */
     protected function save()
     {
@@ -215,6 +222,7 @@ class AbstractSnapshot extends Snapshot
     {
         // Fetch data.
         $data = $this->fetchData();
+
         if ($this->isEmptyData($data)) {
             throw new ContentNotFound("Fetched snapshot is empty.");
         }
@@ -324,4 +332,44 @@ class AbstractSnapshot extends Snapshot
             return $read;
         }
     }
+
+    /**
+     * Overrides the base implementation to add a pre-assertion data handler.
+     *
+     * {@inheritDoc}
+     */
+    protected function assertData($data)
+    {
+        if ($this->dataVisitor !== null) {
+            list($data, $dataSet) = call_user_func($this->dataVisitor, $data, $this->dataSet);
+            $this->dataSet = $dataSet;
+        }
+
+        parent::assertData($data);
+    }
+
+    /**
+     * Sets the node visitor that will be called by the snapshot on each "node".
+     *
+     * @param callable $dataVisitor The data visitor that will be called on each visit of a snapshot "node".
+     *                              The parameters passed to the visitor will be different for each snapshot; usually
+     *                              the expected data and the current data.
+     */
+    public function setDataVisitor(callable $dataVisitor)
+    {
+        $this->dataVisitor = $dataVisitor;
+    }
+
+    /**
+     * Sets the file name the snapshot should use to store and fetch information.
+     *
+     * @param string $snapshotFileName The absolute path to the file the snapshot file should use.
+     *                                 This value is, usually, the one produced by another snapshot `snapshotFileName()`
+     *                                 method.
+     */
+    public function setSnapshotFileName($snapshotFileName)
+    {
+        $this->fileName = $snapshotFileName;
+    }
+
 }

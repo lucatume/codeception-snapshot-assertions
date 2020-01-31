@@ -48,6 +48,13 @@ class HtmlSnapshot extends StringSnapshot
      */
     protected function assertData($data)
     {
-        static::assertEquals($this->indenter->indent($this->dataSet), $this->indenter->indent($data));
+        if ($this->dataVisitor !== null) {
+            list($data, $dataSet) = call_user_func($this->dataVisitor, $data, $this->dataSet);
+            $this->dataSet = $dataSet;
+        }
+
+        $indent = $this->indenter->indent($this->dataSet);
+        $indent1 = $this->indenter->indent($data);
+        static::assertEqualsCanonicalizing($indent, $indent1);
     }
 }

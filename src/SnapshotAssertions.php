@@ -18,11 +18,16 @@ trait SnapshotAssertions
      *
      * If the snapshot file is not present the assertion will be skipped and the snapshot file will be generated.
      *
-     * @param  string  $current  The current string value.
+     * @param string        $current     The current string value.
+     * @param callable|null $dataVisitor A callable to manipulate the file contents before the assertion. The arguments
+     *                                   will be an the expected and the current values (strings).
      */
-    protected function assertMatchesStringSnapshot($current)
+    protected function assertMatchesStringSnapshot($current, callable $dataVisitor = null)
     {
         $stringSnapshot = new StringSnapshot($current);
+        if ($dataVisitor !== null) {
+            $stringSnapshot->setDataVisitor($dataVisitor);
+        }
         $stringSnapshot->assert();
     }
 
@@ -31,11 +36,18 @@ trait SnapshotAssertions
      *
      * If the snapshot file is not present the assertion will be skipped and the snapshot file will be generated.
      *
-     * @param  string  $current  The current HTML string value.
+     * @param string        $current     The current HTML string value.
+     * @param callable|null $dataVisitor A callable to manipulate the file contents before the assertion. The arguments
+     *                                   will be an the expected and the current values (strings).
+     *
+     * @throws \Gajus\Dindent\Exception\InvalidArgumentException If the HTML is not valid.
      */
-    protected function assertMatchesHtmlSnapshot($current)
+    protected function assertMatchesHtmlSnapshot($current, callable $dataVisitor = null)
     {
         $htmlSnapshot = new HtmlSnapshot($current);
+        if ($dataVisitor !== null) {
+            $htmlSnapshot->setDataVisitor($dataVisitor);
+        }
         $htmlSnapshot->assert();
     }
 
@@ -44,11 +56,16 @@ trait SnapshotAssertions
      *
      * If the snapshot file is not present the assertion will be skipped and the snapshot file will be generated.
      *
-     * @param  string  $current  The current JSON string.
+     * @param string        $current     The current JSON string.
+     * @param callable|null $dataVisitor A callable to manipulate the file contents before the assertion. The arguments
+     *                                   will be an the expected and the current values (strings).
      */
-    protected function assertMatchesJsonSnapshot($current)
+    protected function assertMatchesJsonSnapshot($current, callable $dataVisitor = null)
     {
         $jsonSnapshot = new JsonSnapshot($current);
+        if ($dataVisitor !== null) {
+            $jsonSnapshot->setDataVisitor($dataVisitor);
+        }
         $jsonSnapshot->assert();
     }
 
@@ -57,18 +74,34 @@ trait SnapshotAssertions
      *
      * If the snapshot file is not present the assertion will be skipped and the snapshot file will be generated.
      *
-     * @param  string  $current  The current code.
-     * @param string $extension The file extension to use for the code, without the trailing dot.
+     * @param string        $current     The current code.
+     * @param string        $extension   The file extension to use for the code, without the trailing dot.
+     * @param callable|null $dataVisitor A callable to manipulate the file contents before the assertion. The arguments
+     *                                   will be an the expected and the current values (strings).
      */
-    protected function assertMatchesCodeSnapshot($current, $extension = 'php')
+    protected function assertMatchesCodeSnapshot($current, $extension = 'php', callable $dataVisitor = null)
     {
         $codeSnapshot = new CodeSnapshot($current, $extension);
+        if ($dataVisitor !== null) {
+            $codeSnapshot->setDataVisitor($dataVisitor);
+        }
         $codeSnapshot->assert();
     }
 
-    protected function assertMatchesDirectorySnapshot($current)
+    /**
+     * Asserts the current structure, files and file contents of a director match a saved snapshot.
+     *
+     * @param string        $current     The absolute path to the directory to run the assertion on.
+     * @param callable|null $dataVisitor A callable to manipulate each file contents, an array of lines, before the
+     *                                   assertion. The arguments will be the expected and current structure. Each an
+     *                                   array of files, each file an array of its lines.
+     */
+    protected function assertMatchesDirectorySnapshot($current, callable $dataVisitor = null)
     {
         $dirSnapshot = new DirectorySnapshot($current);
+        if ($dataVisitor !== null) {
+            $dirSnapshot->setDataVisitor($dataVisitor);
+        }
         $dirSnapshot->assert();
     }
 }
