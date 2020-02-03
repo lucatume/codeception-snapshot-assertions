@@ -121,7 +121,7 @@ class DirectorySnapshot extends AbstractSnapshot
             $actual = $this->getCurrentFileContents($file->getPathname());
 
             if ($this->dataVisitor !== null) {
-                list($expected, $actual) = call_user_func($this->dataVisitor, $expected, $actual,$file->getPathname());
+                list($expected, $actual) = call_user_func($this->dataVisitor, $expected, $actual, $file->getPathname());
             }
 
             $message = "Current content of {$fileRelativePath} does not match the snapshot content.";

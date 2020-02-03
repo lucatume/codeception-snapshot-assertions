@@ -55,6 +55,6 @@ class HtmlSnapshot extends StringSnapshot
 
         $indent = $this->indenter->indent($this->dataSet);
         $indent1 = $this->indenter->indent($data);
-        static::assertEqualsCanonicalizing($indent, $indent1);
+        static::assertEquals($indent, $indent1);
     }
 }

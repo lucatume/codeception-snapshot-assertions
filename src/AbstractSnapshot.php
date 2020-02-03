@@ -371,5 +371,4 @@ class AbstractSnapshot extends Snapshot
     {
         $this->fileName = $snapshotFileName;
     }
-
 }

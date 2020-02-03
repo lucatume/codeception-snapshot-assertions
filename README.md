@@ -223,3 +223,66 @@ class DirectorySetupTest extends Codeception\TestCase\Test
     }
 }
 ```
+
+## Visitor functions
+
+To allow more fine-grained control over how the assertion on the data should be made, each Snapshot implementation supports "data visitors.".  
+
+A data visitor is a `callable` that will receive, from the snapshot implementation, the expected data and the current data.  
+Depending on the snapshot type the arguments received by the callback might differ or be more than two.
+
+### Examples
+
+In the following example the data visitor is used to exclude some files from a directory snapshot and to drop some hashed lines from some files:
+
+```php
+<?php
+
+public function test_files(){
+        $dataVisitor = static function ($expected, $current, $pathName) {
+            if (strpos($pathName, 'fileOne')) {
+                // Empty file one, like dropping it.
+                return [[], []];
+            }
+
+            if (strpos($pathName, 'fileTwo')) { 
+                // Remove the hash line in file two.
+                $removeHashLine = static function ($line) {
+                    return !preg_match('/\\/\\/\\s*\\[HASH].*$/uim', $line);
+                };
+                return [
+                    array_filter($expected, $removeHashLine),
+                    array_filter($current, $removeHashLine)
+                ];
+            }
+
+            return [$expected, $current];
+        };
+    
+        $dirToTest = codecept_output('dir-to-test');
+        $snapshot =  new DirectorySnapshot($dirToTest);
+        $snapshot->setDataVisitor($dataVisitor);
+        $snapshot->assert();
+}
+```
+
+In this example the data visitor is used to remove some hash data from a JSON object:
+
+```php
+<?php
+
+public function test_json_object(){
+        $removeHashEntry = static function ($jsonString) {
+            // Remove the `hash` key from the JSON object.
+            return json_encode(array_diff_key(json_decode($jsonString, true), array_flip(['hash'])));
+        };
+        $dataVisitor = static function ($expected, $current) use ($removeHashEntry) {
+            return array_map($removeHashEntry, [$expected, $current]);
+        };
+
+        // This first snapshot will create the first HTML snapshot.
+        $firstSnapshot = new JsonSnapshot(MyJsonProducingObject::data());
+        $firstSnapshot->setDataVisitor($dataVisitor);
+        $firstSnapshot->assert();
+}
+```
