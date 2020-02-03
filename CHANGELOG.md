@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## [0.2.3] - 2020-01-31
+## [0.2.3] - 2020-03-03
 ### Added
 - data visitor support in all assertions to allow pre-processing of the expected and current values before assertions
 
