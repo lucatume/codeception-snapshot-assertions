@@ -24,7 +24,7 @@ class AbstractSnapshot extends Snapshot
     /**
      * Keeps a counter for each class, function and data-set combination.
      *
-     * @var array<string,array>
+     * @var array<string,array<string,int>>
      */
     protected static $counters = [];
 
@@ -48,6 +48,13 @@ class AbstractSnapshot extends Snapshot
      * @var callable
      */
     protected $dataVisitor;
+
+    /**
+     * By default, show the diff on failure.
+     *
+     * @var bool
+     */
+    protected $showDiff = true;
 
     /**
      * Snapshot constructor.
@@ -84,14 +91,19 @@ class AbstractSnapshot extends Snapshot
                 debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS
                     | DEBUG_BACKTRACE_PROVIDE_OBJECT, 5),
                 static function (array $backtraceEntry) use ($traitMethods) {
-                    return !in_array(
+                    return isset($backtraceEntry['class']) && !in_array(
                         $backtraceEntry['class'],
                         [Snapshot::class, static::class, self::class, SnapshotAssertions::class],
                         true
                     ) && !in_array($backtraceEntry['function'], $traitMethods, true);
                 }
             ));
-            $class = $backtrace[0]['class'];
+            $class = isset($backtrace[0]['class']) ? $backtrace[0]['class'] : '';
+    
+            if (empty($class)) {
+                throw new \RuntimeException('Cannot get ithe class name.');
+            }
+
             $classFrags = explode('\\', $class);
             $classBasename = array_pop($classFrags);
             $classFile = (new \ReflectionClass($class))->getFileName();
@@ -103,7 +115,7 @@ class AbstractSnapshot extends Snapshot
             $classDir = dirname($classFile);
             $function = $backtrace[0]['function'];
             $dataSetFrag = '';
-            if ($backtrace[0]['object'] instanceof TestCase) {
+            if (isset($backtrace[0]['object']) && $backtrace[0]['object'] instanceof TestCase) {
                 /** @var TestCase $testCase */
                 $testCase = $backtrace[0]['object'];
                 $dataName = $this->getDataName($testCase);
@@ -266,6 +278,10 @@ class AbstractSnapshot extends Snapshot
                 $this->save();
                 $this->printDebug('Snapshot data updated');
                 return;
+            }
+
+            if ($this->showDiff) {
+                throw $exception;
             }
 
             $this->fail($exception->getMessage());
