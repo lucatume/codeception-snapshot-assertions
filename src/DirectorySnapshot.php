@@ -36,14 +36,12 @@ class DirectorySnapshot extends AbstractSnapshot
     {
         $dir = rtrim($dir, '\\/');
 
-        $iterator = new \RecursiveIteratorIterator(
+        return new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator(
                 $dir,
                 \RecursiveDirectoryIterator::SKIP_DOTS | \RecursiveDirectoryIterator::UNIX_PATHS
             )
         );
-
-        return $iterator;
     }
 
     /**
@@ -105,6 +103,8 @@ class DirectorySnapshot extends AbstractSnapshot
             return '/' . ltrim(str_replace($root, '', $file->getPathname()), '/');
         }, iterator_to_array($currentIterator, false));
 
+        usort($currentFiles, 'strcasecmp');
+
         $this->prettyAssert(
             $snapshotFiles,
             $currentFiles,
@@ -113,7 +113,15 @@ class DirectorySnapshot extends AbstractSnapshot
 
         $multiIterator = new \MultipleIterator();
         $multiIterator->attachIterator(new \ArrayIterator($snapshotFiles));
-        $multiIterator->attachIterator($currentIterator);
+        $sortedFiles = iterator_to_array($currentIterator);
+        $sortedFiles = array_combine(
+            array_map(static function (\SplFileInfo $f) {
+                return $f->getPathname();
+            }, $sortedFiles),
+            $sortedFiles
+        );
+        uksort($sortedFiles, 'strcasecmp');
+        $multiIterator->attachIterator(new \ArrayIterator($sortedFiles));
 
         /** @var \SplFileInfo $file */
         foreach ($multiIterator as list($fileRelativePath, $file)) {
@@ -162,6 +170,8 @@ class DirectorySnapshot extends AbstractSnapshot
         if ($closed === false) {
             throw new \RuntimeException("Could not close snapshot file [{$snapshotFilePath}].");
         }
+
+        usort($filePaths, 'strcasecmp');
 
         return $filePaths;
     }
