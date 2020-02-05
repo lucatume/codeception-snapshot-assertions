@@ -3,7 +3,7 @@ name: CI
 on: push
 
 jobs:
-  sniff;
+  sniff:
     name: Code validation
     runs-on: ubuntu-latest
     steps:
@@ -12,9 +12,12 @@ jobs:
       - uses: docker://php:7.3-alpine
         with:
           args: vendor/bin/phpcs --colors -p --standard=PSR2 -s src
+      - uses: MilesChou/composer-action@master
+        with:
+          args: require --dev phpstan/phpstan
       - uses: docker://php:7.3-alpine
         with:
-          args: phpstan analyze src --level=7
+          args: vendor/bin/phpstan analyze src --level=7
   php56:
     name: Test on PHP 5.6
     runs-on: ubuntu-latest
