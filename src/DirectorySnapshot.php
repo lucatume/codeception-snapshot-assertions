@@ -82,7 +82,7 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @param string $fileRelativePath The file relative path to build the section headers for.
      *
-     * @return array An array containing the file start and end section headers for the file path.
+     * @return array<int,string> An array containing the file start and end section headers for the file path.
      */
     protected function getFileSectionHeadersFor($fileRelativePath)
     {
@@ -92,7 +92,11 @@ class DirectorySnapshot extends AbstractSnapshot
     }
 
     /**
-     * {@inheritdoc}
+     * Overrides the base implementation to add a pre-assertion data handler.
+     *
+     * @param string $data The path to the directory to check.
+     *
+     * @return void
      */
     protected function assertData($data)
     {
@@ -114,12 +118,13 @@ class DirectorySnapshot extends AbstractSnapshot
         $multiIterator = new \MultipleIterator();
         $multiIterator->attachIterator(new \ArrayIterator($snapshotFiles));
         $sortedFiles = iterator_to_array($currentIterator);
-        $sortedFiles = array_combine(
+        $sortedFiles = (array)array_combine(
             array_map(static function (\SplFileInfo $f) {
                 return $f->getPathname();
             }, $sortedFiles),
             $sortedFiles
         );
+
         uksort($sortedFiles, 'strcasecmp');
         $multiIterator->attachIterator(new \ArrayIterator($sortedFiles));
 
@@ -143,7 +148,7 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @param string $snapshotFilePath The snapshot file path.
      *
-     * @return array An array of file relative paths from the snapshot.
+     * @return array<string> An array of file relative paths from the snapshot.
      */
     protected function readFileListFromSnapshot($snapshotFilePath)
     {
@@ -156,6 +161,10 @@ class DirectorySnapshot extends AbstractSnapshot
         $filePaths = [];
         while (!feof($snapshotFile)) {
             $line = fgets($snapshotFile);
+
+            if ($line === false) {
+                throw new \RuntimeException("Could not read line from file [{$snapshotFilePath}].");
+            }
 
             $filePath = $this->matchFilePathStartSection($line);
 
@@ -196,20 +205,25 @@ class DirectorySnapshot extends AbstractSnapshot
      * @param string $snapshotFilePath The path to the snapshot file.
      * @param string $fileRelativePath The relative path to the current file.
      *
-     * @return array The lines of the file stored in the snapshot.
+     * @return array<string> The lines of the file stored in the snapshot.
      */
     protected function getFileContents($snapshotFilePath, $fileRelativePath)
     {
         $snapshotFile = fopen($snapshotFilePath, 'rb');
 
         if ($snapshotFile === false) {
-            throw new \RuntimeException("Could not open snapshot file [{$snapshotFile}].");
+            throw new \RuntimeException("Could not open snapshot file [{$snapshotFilePath}].");
         }
 
         $buffering = false;
         $contents = [];
         while (!feof($snapshotFile)) {
             $line = fgets($snapshotFile);
+
+            if ($line === false) {
+                throw new \RuntimeException("Could not read line from snapshot file [{$snapshotFile}].");
+            }
+
             $isStart = $this->matchFilePathStartSection($line) === $fileRelativePath;
             $buffering = $buffering || $isStart;
 
@@ -252,19 +266,25 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @param string $filePath The path to the file to read.
      *
-     * @return array An array of normalized file contents.
+     * @return array<string> An array of normalized file contents.
+     *
+     * @throws \RuntimeException If there's an error while reading the file.
      */
     protected function getCurrentFileContents($filePath)
     {
         $file = fopen($filePath, 'rb');
 
         if ($file === false) {
-            throw new \RuntimeException("Could not open file [{$file}].");
+            throw new \RuntimeException("Could not open file [{$filePath}].");
         }
 
         $contents = [];
         while (!feof($file)) {
-            $contents[] = preg_replace('/[\n\r]$/', '', fgets($file));
+            $line      = fgets($file);
+            if ($line === false) {
+                $line = '';
+            }
+            $contents[] = preg_replace('/[\n\r]$/', '', $line);
         }
 
         $closed = fclose($file);
@@ -279,9 +299,11 @@ class DirectorySnapshot extends AbstractSnapshot
     /**
      * Wraps the default assertion in one providing more insights into the failure reasons.
      *
-     * @param array  $expected The expected value.
-     * @param array  $actual   The actual value.
+     * @param array<string>  $expected The expected value.
+     * @param array<string>  $actual   The actual value.
      * @param string $message  The message to display for the failure, if any.
+     *
+     * @return void
      */
     protected function prettyAssert(array $expected, array $actual, $message)
     {

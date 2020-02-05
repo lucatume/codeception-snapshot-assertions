@@ -24,14 +24,14 @@ class AbstractSnapshot extends Snapshot
     /**
      * Keeps a counter for each class, function and data-set combination.
      *
-     * @var array
+     * @var array<string,array>
      */
     protected static $counters = [];
 
     /**
      * A list of method names provided by the SnapshotAssertions trait.
      *
-     * @var array
+     * @var array<string>
      */
     protected static $traitMethods = [];
 
@@ -95,6 +95,11 @@ class AbstractSnapshot extends Snapshot
             $classFrags = explode('\\', $class);
             $classBasename = array_pop($classFrags);
             $classFile = (new \ReflectionClass($class))->getFileName();
+
+            if ($classFile === false) {
+                throw new \RuntimeException('Cannot get the filename of the class ' . $class);
+            }
+
             $classDir = dirname($classFile);
             $function = $backtrace[0]['function'];
             $dataSetFrag = '';
@@ -121,12 +126,11 @@ class AbstractSnapshot extends Snapshot
     }
 
     /**
+     * Returns an array of the trait method names.
      *
+     * @return array<string> An array of the trait method names.
      *
-     * @return array
-     * @throws \ReflectionException
-     * @since TBD
-     *
+     * @throws \ReflectionException If a reflection cannot be done on a trait method.
      */
     protected static function getTraitMethods()
     {
@@ -177,7 +181,11 @@ class AbstractSnapshot extends Snapshot
      *
      * This method is useful to create, or overwrite, the contents of the snapshot during tests.
      *
-     * @param  mixed  $contents  The snapshot contents.
+     * @param mixed $contents The snapshot contents.
+     *
+     * @throws \ReflectionException
+     *
+     * @return void
      */
     public function snapshotPutContents($contents)
     {
@@ -189,9 +197,10 @@ class AbstractSnapshot extends Snapshot
 
     /**
      * Saves the snapshot contents to the snapshot file.
-     * @throws \RejectionException If there's an issue while building the snapshot filename.
-     * @throws \RuntimeException If the snapshots folder cannot be created.
-     * @throws \ReflectionException If there's an issue building the file name from the test case.
+     *
+     * @throws \Exception If there's an issue reading or saving the snapshot.
+     *
+     * @return void
      */
     protected function save()
     {
@@ -199,7 +208,7 @@ class AbstractSnapshot extends Snapshot
         $snapshotsDir = dirname($fileName);
 
         if (!is_dir($snapshotsDir) && !mkdir($snapshotsDir, 0777, true) && !is_dir($snapshotsDir)) {
-            throw new RuntimeException(sprintf('Snapshots directory "%s" was not created', $snapshotsDir));
+            throw new \RuntimeException(sprintf('Snapshots directory "%s" was not created', $snapshotsDir));
         }
 
         file_put_contents($fileName, $this->prepareSnapshotForDump());
@@ -217,6 +226,10 @@ class AbstractSnapshot extends Snapshot
 
     /**
      * Asserts the current contents match the contents of the snapshot.
+     *
+     * @return void
+     *
+     * @throws \ReflectionException If there's an issue building the snapshot file name.
      */
     public function assert()
     {
@@ -285,6 +298,13 @@ class AbstractSnapshot extends Snapshot
         return !$data;
     }
 
+    /**
+     * Loads the data set from the snapshot.
+     *
+     * @return void
+     *
+     * @throws \ReflectionException
+     */
     protected function load()
     {
         if (!file_exists($this->getFileName())) {
@@ -301,6 +321,8 @@ class AbstractSnapshot extends Snapshot
      * Copy and paste of the bae method to allow for easier debug.
      *
      * @param  string  $message  The message to print in debug.
+     *
+     * @return void
      */
     protected function printDebug($message)
     {
@@ -309,7 +331,7 @@ class AbstractSnapshot extends Snapshot
     /**
  * Returns the data name taking care of doing so in a way that is compatible with different PHPUnit versions.
  *
- * @param  TestCase|\PHPUnit_Framework_TestCase  $testCase The current test case.
+ * @param  TestCase  $testCase The current test case.
  *
  * @return string The data name if available or an empty string if not available.
  */
@@ -322,21 +344,25 @@ class AbstractSnapshot extends Snapshot
         $candidates = array_reverse(class_parents($testCase));
         $testCaseClass = get_class($testCase);
         $candidates[$testCaseClass] = $testCaseClass;
+        $read = '';
         foreach (array_reverse($candidates) as $class) {
             try {
                 $read = (string)ReflectionHelper::readPrivateProperty($testCase, 'dataName', $class);
             } catch (\ReflectionException $e) {
                 continue;
             }
-
-            return $read;
+            break;
         }
+
+        return $read;
     }
 
     /**
      * Overrides the base implementation to add a pre-assertion data handler.
      *
-     * {@inheritDoc}
+     * @param mixed $data The data to check.
+     *
+     * @return void
      */
     protected function assertData($data)
     {
@@ -354,6 +380,8 @@ class AbstractSnapshot extends Snapshot
      * @param callable $dataVisitor The data visitor that will be called on each visit of a snapshot "node".
      *                              The parameters passed to the visitor will be different for each snapshot; usually
      *                              the expected data and the current data.
+     *
+     * @return void
      */
     public function setDataVisitor(callable $dataVisitor)
     {
@@ -366,6 +394,8 @@ class AbstractSnapshot extends Snapshot
      * @param string $snapshotFileName The absolute path to the file the snapshot file should use.
      *                                 This value is, usually, the one produced by another snapshot `snapshotFileName()`
      *                                 method.
+     *
+     * @return void
      */
     public function setSnapshotFileName($snapshotFileName)
     {

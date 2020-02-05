@@ -45,6 +45,12 @@ class HtmlSnapshot extends StringSnapshot
      * Asserts the current HTML fragment matches the one saved in the snapshot.
      *
      * The assertion is made indenting the current and existing HTML fragments before the comparison.
+     *
+     * @param string $data The data, an HTML string, to check.
+     *
+     * @return void
+     *
+     * @throws \Gajus\Dindent\Exception\RuntimeException If there's an issue during the HTML string parsing.
      */
     protected function assertData($data)
     {
