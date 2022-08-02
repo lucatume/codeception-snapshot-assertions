@@ -22,7 +22,7 @@ class DirectorySnapshot extends AbstractSnapshot
      */
     protected function fetchData(): array|string|false
     {
-        return $this->buildIterator($this->current);
+        return iterator_to_array($this->buildIterator($this->current));
     }
 
     /**
@@ -49,12 +49,7 @@ class DirectorySnapshot extends AbstractSnapshot
      */
     protected function isEmptyData($data): bool
     {
-        if (!$data instanceof \Iterator) {
-            throw new ContentNotFound("Data is expected to be an \Iterator instance.");
-        }
-
-        // Empty iterators are fine too, some directory could be expected to be empty.
-        return false;
+        return empty($data) || !is_array($data);
     }
 
     /**
@@ -94,9 +89,9 @@ class DirectorySnapshot extends AbstractSnapshot
     /**
      * Overrides the base implementation to add a pre-assertion data handler.
      *
-     * @param string $data The path to the directory to check.
+     * @param mixed $data The path to the directory to check.
      */
-    protected function assertData($data): void
+    protected function assertData(mixed $data): void
     {
         $currentIterator = $this->buildIterator($this->current);
         $snapshotFiles = $this->readFileListFromSnapshot($this->fileName);
