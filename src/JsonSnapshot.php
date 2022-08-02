@@ -17,7 +17,7 @@ class JsonSnapshot extends AbstractSnapshot
     /**
      * {@inheritDoc}
      */
-    public function fileExtension()
+    public function fileExtension(): string
     {
         return 'snapshot.json';
     }

@@ -36,13 +36,6 @@ class AbstractSnapshot extends Snapshot
     protected static $traitMethods = [];
 
     /**
-     * The current content.
-     *
-     * @var string
-     */
-    protected $current = '';
-
-    /**
      * The callback that will be called on each data entry of the snapshot.
      *
      * @var callable
@@ -54,18 +47,16 @@ class AbstractSnapshot extends Snapshot
      *
      * @param  mixed  $current  The current value.
      */
-    public function __construct($current = null)
+    public function __construct(protected $current = null)
     {
-        $this->current = $current;
     }
 
     /**
      * Returns the absolute path to the snapshot file that has been, or will be, generated.
      *
-     * @return string
      * @throws \ReflectionException If there's an error while building the class reflection.
      */
-    public function snapshotFileName()
+    public function snapshotFileName(): string
     {
         return $this->getFileName();
     }
@@ -76,14 +67,14 @@ class AbstractSnapshot extends Snapshot
      * @return string The snapshot file name, including the file extension.
      * @throws \ReflectionException If the class that called the class cannot be reflected.
      */
-    protected function getFileName()
+    protected function getFileName(): string
     {
         if (empty($this->fileName)) {
             $traitMethods = static::getTraitMethods();
             $backtrace = array_values(array_filter(
                 debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS
                     | DEBUG_BACKTRACE_PROVIDE_OBJECT, 5),
-                static function (array $backtraceEntry) use ($traitMethods) {
+                static function (array $backtraceEntry) use ($traitMethods): bool {
                     return !in_array(
                         $backtraceEntry['class'],
                         [Snapshot::class, static::class, self::class, SnapshotAssertions::class],
@@ -132,14 +123,14 @@ class AbstractSnapshot extends Snapshot
      *
      * @throws \ReflectionException If a reflection cannot be done on a trait method.
      */
-    protected static function getTraitMethods()
+    protected static function getTraitMethods(): array
     {
         if (!empty(static::$traitMethods)) {
             return static::$traitMethods;
         }
 
         $reflection = new \ReflectionClass(SnapshotAssertions::class);
-        static::$traitMethods = array_map(function (\ReflectionMethod $method) {
+        static::$traitMethods = array_map(function (\ReflectionMethod $method): string {
             return $method->name;
         }, $reflection->getMethods());
 
@@ -155,7 +146,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @return int The counter, managed on a static level, for the combination.
      */
-    protected function getCounterFor($class, $function, $dataSetName = '')
+    protected function getCounterFor(string $class, string $function, string $dataSetName = '')
     {
         $function .= $dataSetName;
 
@@ -171,7 +162,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @return string The file extension, without the leading dot, of the snapshot the class will generate.
      */
-    public function fileExtension()
+    public function fileExtension(): string
     {
         return 'snapshot';
     }
@@ -184,10 +175,8 @@ class AbstractSnapshot extends Snapshot
      * @param mixed $contents The snapshot contents.
      *
      * @throws \ReflectionException
-     *
-     * @return void
      */
-    public function snapshotPutContents($contents)
+    public function snapshotPutContents(string|bool $contents): void
     {
         $dataSetBackup = $this->dataSet;
         $this->dataSet = $contents;
@@ -199,10 +188,8 @@ class AbstractSnapshot extends Snapshot
      * Saves the snapshot contents to the snapshot file.
      *
      * @throws \Exception If there's an issue reading or saving the snapshot.
-     *
-     * @return void
      */
-    protected function save()
+    protected function save(): void
     {
         $fileName = $this->getFileName();
         $snapshotsDir = dirname($fileName);
@@ -219,7 +206,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @return mixed The prepared snapshot contents.
      */
-    public function prepareSnapshotForDump()
+    public function prepareSnapshotForDump(): string|bool
     {
         return $this->dataSet;
     }
@@ -227,11 +214,10 @@ class AbstractSnapshot extends Snapshot
     /**
      * Asserts the current contents match the contents of the snapshot.
      *
-     * @return void
      *
      * @throws \ReflectionException If there's an issue building the snapshot file name.
      */
-    public function assert()
+    public function assert(): void
     {
         // Fetch data.
         $data = $this->fetchData();
@@ -279,7 +265,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @return mixed The fetched data, the current data by default.
      */
-    protected function fetchData()
+    protected function fetchData(): array|string|false
     {
         return $this->current;
     }
@@ -293,7 +279,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @return bool Whether the data can be considered empty, hence invalid, or not.
      */
-    protected function isEmptyData($data)
+    protected function isEmptyData($data): bool
     {
         return !$data;
     }
@@ -301,11 +287,10 @@ class AbstractSnapshot extends Snapshot
     /**
      * Loads the data set from the snapshot.
      *
-     * @return void
      *
      * @throws \ReflectionException
      */
-    protected function load()
+    protected function load(): void
     {
         if (!file_exists($this->getFileName())) {
             return;
@@ -326,7 +311,7 @@ class AbstractSnapshot extends Snapshot
      */
     protected function printDebug($message)
     {
-        Debug::debug(get_class($this).': '.$message);
+        Debug::debug($this::class.': '.$message);
     }
     /**
  * Returns the data name taking care of doing so in a way that is compatible with different PHPUnit versions.
@@ -335,20 +320,20 @@ class AbstractSnapshot extends Snapshot
  *
  * @return string The data name if available or an empty string if not available.
  */
-    protected function getDataName(TestCase $testCase)
+    protected function getDataName(TestCase $testCase): string
     {
         if (method_exists($testCase, 'dataName')) {
             return (string)$testCase->dataName();
         }
 
         $candidates = array_reverse(class_parents($testCase));
-        $testCaseClass = get_class($testCase);
+        $testCaseClass = $testCase::class;
         $candidates[$testCaseClass] = $testCaseClass;
         $read = '';
         foreach (array_reverse($candidates) as $class) {
             try {
                 $read = (string)ReflectionHelper::readPrivateProperty($testCase, 'dataName', $class);
-            } catch (\ReflectionException $e) {
+            } catch (\ReflectionException) {
                 continue;
             }
             break;
@@ -361,10 +346,8 @@ class AbstractSnapshot extends Snapshot
      * Overrides the base implementation to add a pre-assertion data handler.
      *
      * @param mixed $data The data to check.
-     *
-     * @return void
      */
-    protected function assertData($data)
+    protected function assertData(mixed $data): void
     {
         if ($this->dataVisitor !== null) {
             list($data, $dataSet) = call_user_func($this->dataVisitor, $data, $this->dataSet);
@@ -380,10 +363,8 @@ class AbstractSnapshot extends Snapshot
      * @param callable $dataVisitor The data visitor that will be called on each visit of a snapshot "node".
      *                              The parameters passed to the visitor will be different for each snapshot; usually
      *                              the expected data and the current data.
-     *
-     * @return void
      */
-    public function setDataVisitor(callable $dataVisitor)
+    public function setDataVisitor(callable $dataVisitor): void
     {
         $this->dataVisitor = $dataVisitor;
     }
@@ -394,10 +375,8 @@ class AbstractSnapshot extends Snapshot
      * @param string $snapshotFileName The absolute path to the file the snapshot file should use.
      *                                 This value is, usually, the one produced by another snapshot `snapshotFileName()`
      *                                 method.
-     *
-     * @return void
      */
-    public function setSnapshotFileName($snapshotFileName)
+    public function setSnapshotFileName(string $snapshotFileName): void
     {
         $this->fileName = $snapshotFileName;
     }

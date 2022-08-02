@@ -9,7 +9,7 @@ class DirectorySnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_create_snapshot_if_not_present()
+    public function should_create_snapshot_if_not_present(): void
     {
         $dirSnapshot = new DirectorySnapshot(__DIR__);
         $snapshot = $dirSnapshot->snapshotFileName();
@@ -26,7 +26,7 @@ class DirectorySnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_fail_when_snapshots_differ()
+    public function should_fail_when_snapshots_differ(): void
     {
         $prev =  new DirectorySnapshot(codecept_root_dir('tests/_support'));
         $prev->assert();
@@ -46,7 +46,7 @@ class DirectorySnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_succeed_when_snapshots_are_equal()
+    public function should_succeed_when_snapshots_are_equal(): void
     {
         $prev =  new DirectorySnapshot(codecept_root_dir('tests/_support'));
         $prev->assert();
@@ -64,7 +64,7 @@ class DirectorySnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_correctly_name_snapshots()
+    public function should_correctly_name_snapshots(): void
     {
         $dirSnapshot = new DirectorySnapshot(__DIR__);
         $classFrags = explode('\\', __CLASS__);
@@ -90,7 +90,7 @@ class DirectorySnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_allow_adding_a_visitor()
+    public function should_allow_adding_a_visitor(): void
     {
         $hash = md5(microtime());
         $dir = codecept_output_dir('dir_' . $hash);
@@ -108,14 +108,14 @@ With a generated, time-dependant hash.
 TXT;
         file_put_contents($fileTwo, $fileTwoContents);
         file_put_contents($fileThree, 'Just a normal file.');
-        $dataVisitor = static function ($expected, $current, $pathName) {
+        $dataVisitor = static function ($expected, $current, $pathName): array {
             if (strpos($pathName, 'fileOne')) {
                 // Empty file one.
                 return [[], []];
             }
 
             if (strpos($pathName, 'fileTwo')) { // Remove the hash line in file two.
-                $removeHashLine = static function ($line) {
+                $removeHashLine = static function ($line): bool {
                     return !preg_match('/\\/\\/\\s*\\[HASH].*$/uim', $line);
                 };
                 return [

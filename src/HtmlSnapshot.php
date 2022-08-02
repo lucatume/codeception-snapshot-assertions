@@ -17,9 +17,8 @@ class HtmlSnapshot extends StringSnapshot
 {
     /**
      * An instance of the HTML indenter.
-     * @var Indenter
      */
-    protected $indenter;
+    protected \Gajus\Dindent\Indenter $indenter;
 
     /**
      * HtmlSnapshot constructor.
@@ -36,7 +35,7 @@ class HtmlSnapshot extends StringSnapshot
     /**
      * {@inheritDoc}
      */
-    public function fileExtension()
+    public function fileExtension(): string
     {
         return 'snapshot.html';
     }
@@ -48,11 +47,10 @@ class HtmlSnapshot extends StringSnapshot
      *
      * @param string $data The data, an HTML string, to check.
      *
-     * @return void
      *
      * @throws \Gajus\Dindent\Exception\RuntimeException If there's an issue during the HTML string parsing.
      */
-    protected function assertData($data)
+    protected function assertData($data): void
     {
         if ($this->dataVisitor !== null) {
             list($data, $dataSet) = call_user_func($this->dataVisitor, $data, $this->dataSet);

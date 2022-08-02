@@ -16,7 +16,7 @@ class StringSnapshot extends AbstractSnapshot
     /**
      * {@inheritDoc}
      */
-    public function fileExtension()
+    public function fileExtension(): string
     {
         return 'snapshot.txt';
     }
@@ -37,7 +37,7 @@ class StringSnapshot extends AbstractSnapshot
      *
      * @return string The string representation of the current value.
      */
-    protected function fetchData()
+    protected function fetchData(): array|string|false
     {
         return $this->stringify($this->current);
     }
@@ -73,7 +73,7 @@ class StringSnapshot extends AbstractSnapshot
      * @return bool
      * @since TBD
      */
-    protected function isEmptyData($data)
+    protected function isEmptyData($data): bool
     {
         return $this->stringify($data) === '';
     }

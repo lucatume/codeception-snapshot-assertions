@@ -20,7 +20,7 @@ class DirectorySnapshot extends AbstractSnapshot
     /**
      * {@inheritDoc}
      */
-    protected function fetchData()
+    protected function fetchData(): array|string|false
     {
         return $this->buildIterator($this->current);
     }
@@ -32,13 +32,14 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @return \RecursiveIteratorIterator The recursive directory iterator, built on the specified directory.
      */
-    protected function buildIterator($dir)
+    protected function buildIterator(string $dir): \RecursiveIteratorIterator
     {
         $dir = rtrim($dir, '\\/');
 
         return new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator(
                 $dir,
+                
                 \RecursiveDirectoryIterator::SKIP_DOTS | \RecursiveDirectoryIterator::UNIX_PATHS
             )
         );
@@ -47,7 +48,7 @@ class DirectorySnapshot extends AbstractSnapshot
     /**
      * {@inheritDoc}
      */
-    protected function isEmptyData($data)
+    protected function isEmptyData($data): bool
     {
         if (!$data instanceof \Iterator) {
             throw new ContentNotFound("Data is expected to be an \Iterator instance.");
@@ -60,7 +61,7 @@ class DirectorySnapshot extends AbstractSnapshot
     /**
      * {@inheritDoc}
      */
-    public function prepareSnapshotForDump()
+    public function prepareSnapshotForDump(): string
     {
         $iterator = $this->buildIterator($this->current);
 
@@ -84,7 +85,7 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @return array<int,string> An array containing the file start and end section headers for the file path.
      */
-    protected function getFileSectionHeadersFor($fileRelativePath)
+    protected function getFileSectionHeadersFor(string $fileRelativePath): array
     {
         $fileSectionHeaderStart = sprintf('>>> %s >>>', $fileRelativePath);
         $fileSectionHeaderEnd = sprintf('<<< %s <<<', $fileRelativePath);
@@ -95,15 +96,13 @@ class DirectorySnapshot extends AbstractSnapshot
      * Overrides the base implementation to add a pre-assertion data handler.
      *
      * @param string $data The path to the directory to check.
-     *
-     * @return void
      */
-    protected function assertData($data)
+    protected function assertData($data): void
     {
         $currentIterator = $this->buildIterator($this->current);
         $snapshotFiles = $this->readFileListFromSnapshot($this->fileName);
         $root = rtrim($this->current, '\\/');
-        $currentFiles = array_map(static function (\SplFileInfo $file) use ($root) {
+        $currentFiles = array_map(static function (\SplFileInfo $file) use ($root): string {
             return '/' . ltrim(str_replace($root, '', $file->getPathname()), '/');
         }, iterator_to_array($currentIterator, false));
 
@@ -119,7 +118,7 @@ class DirectorySnapshot extends AbstractSnapshot
         $multiIterator->attachIterator(new \ArrayIterator($snapshotFiles));
         $sortedFiles = iterator_to_array($currentIterator);
         $sortedFiles = (array)array_combine(
-            array_map(static function (\SplFileInfo $f) {
+            array_map(static function (\SplFileInfo $f): string {
                 return $f->getPathname();
             }, $sortedFiles),
             $sortedFiles
@@ -148,9 +147,9 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @param string $snapshotFilePath The snapshot file path.
      *
-     * @return array<string> An array of file relative paths from the snapshot.
+     * @return string[] An array of file relative paths from the snapshot.
      */
-    protected function readFileListFromSnapshot($snapshotFilePath)
+    protected function readFileListFromSnapshot(string $snapshotFilePath): array
     {
         $snapshotFile = fopen($snapshotFilePath, 'rb');
 
@@ -192,7 +191,7 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @return string The file path, or an empty string if this is not a line in the format of a section header.
      */
-    protected function matchFilePathStartSection($string)
+    protected function matchFilePathStartSection(string $string)
     {
         preg_match('#^>>> (.+) >>>$#', $string, $matches);
 
@@ -205,9 +204,9 @@ class DirectorySnapshot extends AbstractSnapshot
      * @param string $snapshotFilePath The path to the snapshot file.
      * @param string $fileRelativePath The relative path to the current file.
      *
-     * @return array<string> The lines of the file stored in the snapshot.
+     * @return string[]|null[] The lines of the file stored in the snapshot.
      */
-    protected function getFileContents($snapshotFilePath, $fileRelativePath)
+    protected function getFileContents(string $snapshotFilePath, string $fileRelativePath): array
     {
         $snapshotFile = fopen($snapshotFilePath, 'rb');
 
@@ -254,7 +253,7 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @return string The file path, or an empty string if this is not a line in the format of a section header.
      */
-    protected function matchFilePathEndSection($string)
+    protected function matchFilePathEndSection(string $string)
     {
         preg_match('#^<<< (.+) <<<$#', $string, $matches);
 
@@ -266,11 +265,11 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @param string $filePath The path to the file to read.
      *
-     * @return array<string> An array of normalized file contents.
+     * @return string[]|null[] An array of normalized file contents.
      *
      * @throws \RuntimeException If there's an error while reading the file.
      */
-    protected function getCurrentFileContents($filePath)
+    protected function getCurrentFileContents(string $filePath): array
     {
         $file = fopen($filePath, 'rb');
 
@@ -302,10 +301,8 @@ class DirectorySnapshot extends AbstractSnapshot
      * @param array<string>  $expected The expected value.
      * @param array<string>  $actual   The actual value.
      * @param string $message  The message to display for the failure, if any.
-     *
-     * @return void
      */
-    protected function prettyAssert(array $expected, array $actual, $message)
+    protected function prettyAssert(array $expected, array $actual, string $message): void
     {
         try {
             $this->assertEquals($expected, $actual);

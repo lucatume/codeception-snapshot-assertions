@@ -22,7 +22,7 @@ trait SnapshotAssertions
      * @param callable|null $dataVisitor A callable to manipulate the file contents before the assertion. The arguments
      *                                   will be an the expected and the current values (strings).
      */
-    protected function assertMatchesStringSnapshot($current, callable $dataVisitor = null)
+    protected function assertMatchesStringSnapshot(string $current, callable $dataVisitor = null)
     {
         $stringSnapshot = new StringSnapshot($current);
         if ($dataVisitor !== null) {
@@ -42,7 +42,7 @@ trait SnapshotAssertions
      *
      * @throws \Gajus\Dindent\Exception\InvalidArgumentException If the HTML is not valid.
      */
-    protected function assertMatchesHtmlSnapshot($current, callable $dataVisitor = null)
+    protected function assertMatchesHtmlSnapshot(string $current, callable $dataVisitor = null)
     {
         $htmlSnapshot = new HtmlSnapshot($current);
         if ($dataVisitor !== null) {
@@ -60,7 +60,7 @@ trait SnapshotAssertions
      * @param callable|null $dataVisitor A callable to manipulate the file contents before the assertion. The arguments
      *                                   will be an the expected and the current values (strings).
      */
-    protected function assertMatchesJsonSnapshot($current, callable $dataVisitor = null)
+    protected function assertMatchesJsonSnapshot(string $current, callable $dataVisitor = null)
     {
         $jsonSnapshot = new JsonSnapshot($current);
         if ($dataVisitor !== null) {
@@ -79,7 +79,7 @@ trait SnapshotAssertions
      * @param callable|null $dataVisitor A callable to manipulate the file contents before the assertion. The arguments
      *                                   will be an the expected and the current values (strings).
      */
-    protected function assertMatchesCodeSnapshot($current, $extension = 'php', callable $dataVisitor = null)
+    protected function assertMatchesCodeSnapshot(string $current, string $extension = 'php', callable $dataVisitor = null)
     {
         $codeSnapshot = new CodeSnapshot($current, $extension);
         if ($dataVisitor !== null) {
@@ -96,7 +96,7 @@ trait SnapshotAssertions
      *                                   assertion. The arguments will be the expected and current structure. Each an
      *                                   array of files, each file an array of its lines.
      */
-    protected function assertMatchesDirectorySnapshot($current, callable $dataVisitor = null)
+    protected function assertMatchesDirectorySnapshot(string $current, callable $dataVisitor = null)
     {
         $dirSnapshot = new DirectorySnapshot($current);
         if ($dataVisitor !== null) {

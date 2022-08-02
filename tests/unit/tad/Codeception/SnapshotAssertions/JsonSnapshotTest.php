@@ -9,7 +9,7 @@ class JsonSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_create_snapshot_if_not_present()
+    public function should_create_snapshot_if_not_present(): void
     {
         $jsonSnapshot = new JsonSnapshot(json_encode(['some'=>'foo']));
         $snapshot = $jsonSnapshot->snapshotFileName();
@@ -26,7 +26,7 @@ class JsonSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_fail_when_snapshots_differ()
+    public function should_fail_when_snapshots_differ(): void
     {
         $jsonSnapshot = new JsonSnapshot(json_encode(['test' => 'foo']));
         $jsonSnapshot->snapshotPutContents(json_encode(['test' => 'bar']));
@@ -44,7 +44,7 @@ class JsonSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_succeed_when_snapshots_are_equal()
+    public function should_succeed_when_snapshots_are_equal(): void
     {
         $jsonSnapshot = new JsonSnapshot(json_encode(['test'=>'foo']));
         $jsonSnapshot->snapshotPutContents(json_encode(['test'=>'foo']));
@@ -60,7 +60,7 @@ class JsonSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_fail_when_snapshots_differ_by_type()
+    public function should_fail_when_snapshots_differ_by_type(): void
     {
         $jsonSnapshot = new JsonSnapshot(json_encode(['foo'=>'23']));
         $jsonSnapshot->snapshotPutContents(json_encode(['foo'=>23]));
@@ -78,7 +78,7 @@ class JsonSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_correctly_name_snapshots()
+    public function should_correctly_name_snapshots(): void
     {
         $jsonSnapshot = new JsonSnapshot(['test'=>'foo']);
         $classFrags = explode('\\', __CLASS__);

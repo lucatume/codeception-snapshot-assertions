@@ -15,9 +15,8 @@ class CodeSnapshot extends StringSnapshot
 {
     /**
      * The file extension of the produced snapshots in the format, without the leading dot.
-     * @var string
      */
-    protected $extension;
+    protected string $extension;
 
     /**
      * CodeSnapshot constructor.
@@ -34,7 +33,7 @@ class CodeSnapshot extends StringSnapshot
     /**
      * {@inheritDoc}
      */
-    public function fileExtension()
+    public function fileExtension(): string
     {
         return 'snapshot.'.$this->extension;
     }

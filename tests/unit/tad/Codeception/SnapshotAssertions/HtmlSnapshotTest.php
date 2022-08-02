@@ -8,7 +8,7 @@ use PHPUnit\Framework\ExpectationFailedException;
 class HtmlSnapshotTest extends BaseTestCase
 {
 
-    public function should_correctly_name_snapshot_files()
+    public function should_correctly_name_snapshot_files(): void
     {
         $htmlSnapshot = new HtmlSnapshot('<p>test</p>');
         $classFrags = explode('\\', __CLASS__);
@@ -34,7 +34,7 @@ class HtmlSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_create_snapshot_if_not_present()
+    public function should_create_snapshot_if_not_present(): void
     {
         $htmlSnapshot = new HtmlSnapshot('foo');
         $snapshot = $htmlSnapshot->snapshotFileName();
@@ -51,7 +51,7 @@ class HtmlSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_fail_when_snapshots_differ()
+    public function should_fail_when_snapshots_differ(): void
     {
         $htmlSnapshot = new HtmlSnapshot('<p>foo</p>');
         $htmlSnapshot->snapshotPutContents('<h2>bar</h2>');
@@ -69,7 +69,7 @@ class HtmlSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_succeed_when_snapshots_are_equal()
+    public function should_succeed_when_snapshots_are_equal(): void
     {
         $htmlSnapshot = new HtmlSnapshot('<ul><li>one</li><li>two</li></ul>');
         $htmlSnapshot->snapshotPutContents('<ul><li>one</li><li>two</li></ul>');
@@ -85,7 +85,7 @@ class HtmlSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_not_fail_when_html_spacing_and_newlines_differ()
+    public function should_not_fail_when_html_spacing_and_newlines_differ(): void
     {
         $current = <<< HTML
         <ul>
@@ -107,7 +107,7 @@ HTML;
      *
      * @test
      */
-    public function should_allow_comparing_complete_html_documents()
+    public function should_allow_comparing_complete_html_documents(): void
     {
         $htmlOne = <<<HTML
 <!doctype html>
@@ -152,12 +152,12 @@ HTML;
      *
      * @test
      */
-    public function should_allow_adding_a_visitor()
+    public function should_allow_adding_a_visitor(): void
     {
-        $removeHashLine = static function ($line) {
-            return strpos($line, 'name="hash"') === false;
+        $removeHashLine = static function ($line): bool {
+            return !str_contains($line, 'name="hash"');
         };
-        $dataVisitor = static function ($expected, $current) use ($removeHashLine) {
+        $dataVisitor = static function ($expected, $current) use ($removeHashLine): array {
             return [
                 implode("\n", array_filter(explode("\n", $expected), $removeHashLine)),
                 implode("\n", array_filter(explode("\n", $current), $removeHashLine)),

@@ -6,9 +6,9 @@ use Codeception\TestCase\Test;
 
 class BaseTestCase extends Test
 {
-    protected $unlinkAfter = [];
+    protected array $unlinkAfter = [];
 
-    protected function _after()
+    protected function _after(): void
     {
         foreach ($this->unlinkAfter as $file) {
             if (!file_exists($file)) {

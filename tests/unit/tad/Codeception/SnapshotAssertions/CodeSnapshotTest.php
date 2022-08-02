@@ -9,7 +9,7 @@ class CodeSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_create_snapshot_if_not_present()
+    public function should_create_snapshot_if_not_present(): void
     {
         $stringSnapshot = new CodeSnapshot('foo', 'js');
         $snapshot = $stringSnapshot->snapshotFileName();
@@ -26,7 +26,7 @@ class CodeSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_fail_when_snapshots_differ()
+    public function should_fail_when_snapshots_differ(): void
     {
         $stringSnapshot = new CodeSnapshot('foo');
         $stringSnapshot->snapshotPutContents('<?php echo "bar";');
@@ -44,7 +44,7 @@ class CodeSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_succeed_when_snapshots_are_equal()
+    public function should_succeed_when_snapshots_are_equal(): void
     {
         $stringSnapshot = new CodeSnapshot('let foo = bar', 'js');
         $stringSnapshot->snapshotPutContents('let foo = bar');
@@ -60,7 +60,7 @@ class CodeSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_fail_when_snapshots_differ_by_newlines()
+    public function should_fail_when_snapshots_differ_by_newlines(): void
     {
         $stringSnapshot = new CodeSnapshot('let foo = bar', 'js');
         $stringSnapshot->snapshotPutContents("let foo\n= bar");
@@ -78,7 +78,7 @@ class CodeSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_fail_due_to_leading_or_trailing_space()
+    public function should_fail_due_to_leading_or_trailing_space(): void
     {
         $stringSnapshot = new CodeSnapshot(' let foo = bar ', 'js');
         $stringSnapshot->snapshotPutContents('let foo = bar');
@@ -96,7 +96,7 @@ class CodeSnapshotTest extends BaseTestCase
      *
      * @test
      */
-    public function should_correctly_name_snapshots()
+    public function should_correctly_name_snapshots(): void
     {
         $stringSnapshot = new CodeSnapshot(' let foo = bar ', 'js');
         $classFrags = explode('\\', __CLASS__);
