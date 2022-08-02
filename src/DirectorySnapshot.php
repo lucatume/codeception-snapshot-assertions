@@ -39,7 +39,6 @@ class DirectorySnapshot extends AbstractSnapshot
         return new \RecursiveIteratorIterator(
             new \RecursiveDirectoryIterator(
                 $dir,
-                
                 \RecursiveDirectoryIterator::SKIP_DOTS | \RecursiveDirectoryIterator::UNIX_PATHS
             )
         );

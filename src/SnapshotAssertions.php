@@ -79,8 +79,11 @@ trait SnapshotAssertions
      * @param callable|null $dataVisitor A callable to manipulate the file contents before the assertion. The arguments
      *                                   will be an the expected and the current values (strings).
      */
-    protected function assertMatchesCodeSnapshot(string $current, string $extension = 'php', callable $dataVisitor = null)
-    {
+    protected function assertMatchesCodeSnapshot(
+        string $current,
+        string $extension = 'php',
+        callable $dataVisitor = null
+    ) {
         $codeSnapshot = new CodeSnapshot($current, $extension);
         if ($dataVisitor !== null) {
             $codeSnapshot->setDataVisitor($dataVisitor);

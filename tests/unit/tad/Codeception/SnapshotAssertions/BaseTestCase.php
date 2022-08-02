@@ -2,9 +2,9 @@
 
 namespace tad\Codeception\SnapshotAssertions;
 
-use Codeception\TestCase\Test;
+use Codeception\Test\Unit;
 
-class BaseTestCase extends Test
+class BaseTestCase extends Unit
 {
     protected array $unlinkAfter = [];
 
