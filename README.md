@@ -27,7 +27,8 @@ class WidgetTest extends Codeception\TestCase\Test
 
 The package is based on the snapshot support added in Codeception since version `2.5.0`, as such the library requirments are:
 * PHP 5.6+
-* Codeception 2.5+ 
+* Codeception 2.5+
+*
 
 ## Installation
 
