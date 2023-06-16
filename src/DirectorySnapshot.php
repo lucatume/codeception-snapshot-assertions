@@ -7,22 +7,44 @@
 
 namespace tad\Codeception\SnapshotAssertions;
 
-use Codeception\Exception\ContentNotFound;
+use ArrayIterator;
+use FilesystemIterator;
+use InvalidArgumentException;
+use MultipleIterator;
 use PHPUnit\Framework\ExpectationFailedException;
+use RecursiveDirectoryIterator;
+use RecursiveIteratorIterator;
+use ReflectionException;
+use RuntimeException;
+use SplFileInfo;
 
 /**
  * Class DirectorySnapshot
  *
  * @package tad\Codeception\SnapshotAssertions
+ * @property string $current
  */
 class DirectorySnapshot extends AbstractSnapshot
 {
+    private ?string $preparedSnapshot = null;
+
+    public function __construct($current = null)
+    {
+        parent::__construct($current);
+
+        if (!(is_string($current) && is_dir($current))) {
+            throw new InvalidArgumentException('Current must be a string and an existing directory.');
+        }
+
+        $this->current = $current;
+    }
+
     /**
      * {@inheritDoc}
      */
-    protected function fetchData(): array|string|false
+    protected function fetchData(): string|false
     {
-        return iterator_to_array($this->buildIterator($this->current));
+        return $this->prepareSnapshotForDump();
     }
 
     /**
@@ -30,16 +52,16 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @param string $dir The directory to build the iterator for.
      *
-     * @return \RecursiveIteratorIterator The recursive directory iterator, built on the specified directory.
+     * @return RecursiveIteratorIterator<RecursiveDirectoryIterator>
      */
-    protected function buildIterator(string $dir): \RecursiveIteratorIterator
+    protected function buildIterator(string $dir): RecursiveIteratorIterator
     {
         $dir = rtrim($dir, '\\/');
 
-        return new \RecursiveIteratorIterator(
-            new \RecursiveDirectoryIterator(
+        return new RecursiveIteratorIterator(
+            new RecursiveDirectoryIterator(
                 $dir,
-                \RecursiveDirectoryIterator::SKIP_DOTS | \RecursiveDirectoryIterator::UNIX_PATHS
+                FilesystemIterator::SKIP_DOTS | FilesystemIterator::UNIX_PATHS
             )
         );
     }
@@ -47,29 +69,27 @@ class DirectorySnapshot extends AbstractSnapshot
     /**
      * {@inheritDoc}
      */
-    protected function isEmptyData($data): bool
-    {
-        return empty($data) || !is_array($data);
-    }
-
-    /**
-     * {@inheritDoc}
-     */
     public function prepareSnapshotForDump(): string
     {
+        if ($this->preparedSnapshot !== null) {
+            return $this->preparedSnapshot;
+        }
+
         $iterator = $this->buildIterator($this->current);
 
         $fileEntries = [];
-        /** @var \SplFileInfo $file */
+        /** @var SplFileInfo $file */
         foreach ($iterator as $file) {
             $fileRelativePath = str_replace($this->current, '', $file->getPathname());
-            list($fileSectionHeaderStart, $fileSectionHeaderEnd) = $this->getFileSectionHeadersFor($fileRelativePath);
+            [$fileSectionHeaderStart, $fileSectionHeaderEnd] = $this->getFileSectionHeadersFor($fileRelativePath);
             $fileContents = file_get_contents($file->getPathname());
             $fileEntry = sprintf("%s\n%s\n%s", $fileSectionHeaderStart, $fileContents, $fileSectionHeaderEnd);
             $fileEntries[] = $fileEntry;
         }
 
-        return implode("\n\n", $fileEntries);
+        $this->preparedSnapshot = implode("\n\n", $fileEntries);
+
+        return $this->preparedSnapshot;
     }
 
     /**
@@ -90,15 +110,19 @@ class DirectorySnapshot extends AbstractSnapshot
      * Overrides the base implementation to add a pre-assertion data handler.
      *
      * @param mixed $data The path to the directory to check.
+     *
+     * @throws ReflectionException
      */
     protected function assertData(mixed $data): void
     {
         $currentIterator = $this->buildIterator($this->current);
-        $snapshotFiles = $this->readFileListFromSnapshot($this->fileName);
+        $snapshotFiles = $this->readFileListFromSnapshot($this->getFileName());
         $root = rtrim($this->current, '\\/');
-        $currentFiles = array_map(static function (\SplFileInfo $file) use ($root): string {
+        /** @var SplFileInfo[] $files */
+        $files = iterator_to_array($currentIterator, false);
+        $currentFiles = array_map(static function (SplFileInfo $file) use ($root): string {
             return '/' . ltrim(str_replace($root, '', $file->getPathname()), '/');
-        }, iterator_to_array($currentIterator, false));
+        }, $files);
 
         usort($currentFiles, 'strcasecmp');
 
@@ -108,26 +132,30 @@ class DirectorySnapshot extends AbstractSnapshot
             'Directory snapshot and current directory do not have the same files.'
         );
 
-        $multiIterator = new \MultipleIterator();
-        $multiIterator->attachIterator(new \ArrayIterator($snapshotFiles));
-        $sortedFiles = iterator_to_array($currentIterator);
-        $sortedFiles = (array)array_combine(
-            array_map(static function (\SplFileInfo $f): string {
+        $multiIterator = new MultipleIterator();
+        $multiIterator->attachIterator(new ArrayIterator($snapshotFiles));
+        $sortedFiles = $files;
+        $sortedFiles = array_combine(
+            array_map(static function (SplFileInfo $f): string {
                 return $f->getPathname();
             }, $sortedFiles),
             $sortedFiles
         );
 
         uksort($sortedFiles, 'strcasecmp');
-        $multiIterator->attachIterator(new \ArrayIterator($sortedFiles));
+        $multiIterator->attachIterator(new ArrayIterator($sortedFiles));
 
-        /** @var \SplFileInfo $file */
-        foreach ($multiIterator as list($fileRelativePath, $file)) {
-            $expected = $this->getFileContents($this->fileName, $fileRelativePath);
+        /** @var SplFileInfo $file */
+        foreach ($multiIterator as [$fileRelativePath, $file]) {
+            $expected = $this->getFileContents($this->getFileName(), $fileRelativePath);
             $actual = $this->getCurrentFileContents($file->getPathname());
 
             if ($this->dataVisitor !== null) {
-                list($expected, $actual) = call_user_func($this->dataVisitor, $expected, $actual, $file->getPathname());
+                $visited = call_user_func($this->dataVisitor, $expected, $actual, $file->getPathname());
+                if (!(is_array($visited) && count($visited) === 2)) {
+                    throw new RuntimeException('Data visitor must return an array with two string elements');
+                }
+                [$expected, $actual] = $visited;
             }
 
             $message = "Current content of {$fileRelativePath} does not match the snapshot content.";
@@ -148,7 +176,7 @@ class DirectorySnapshot extends AbstractSnapshot
         $snapshotFile = fopen($snapshotFilePath, 'rb');
 
         if ($snapshotFile === false) {
-            throw new \RuntimeException("Could not open snapshot file [{$snapshotFilePath}].");
+            throw new RuntimeException("Could not open snapshot file [{$snapshotFilePath}].");
         }
 
         $filePaths = [];
@@ -156,7 +184,7 @@ class DirectorySnapshot extends AbstractSnapshot
             $line = fgets($snapshotFile);
 
             if ($line === false) {
-                throw new \RuntimeException("Could not read line from file [{$snapshotFilePath}].");
+                throw new RuntimeException("Could not read line from file [{$snapshotFilePath}].");
             }
 
             $filePath = $this->matchFilePathStartSection($line);
@@ -165,12 +193,12 @@ class DirectorySnapshot extends AbstractSnapshot
                 continue;
             }
 
-            $filePaths[] =$filePath;
+            $filePaths[] = $filePath;
         }
         $closed = fclose($snapshotFile);
 
         if ($closed === false) {
-            throw new \RuntimeException("Could not close snapshot file [{$snapshotFilePath}].");
+            throw new RuntimeException("Could not close snapshot file [{$snapshotFilePath}].");
         }
 
         usort($filePaths, 'strcasecmp');
@@ -185,7 +213,7 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @return string The file path, or an empty string if this is not a line in the format of a section header.
      */
-    protected function matchFilePathStartSection(string $string)
+    protected function matchFilePathStartSection(string $string): string
     {
         preg_match('#^>>> (.+) >>>$#', $string, $matches);
 
@@ -198,14 +226,14 @@ class DirectorySnapshot extends AbstractSnapshot
      * @param string $snapshotFilePath The path to the snapshot file.
      * @param string $fileRelativePath The relative path to the current file.
      *
-     * @return string[]|null[] The lines of the file stored in the snapshot.
+     * @return string[] The lines of the file stored in the snapshot.
      */
     protected function getFileContents(string $snapshotFilePath, string $fileRelativePath): array
     {
         $snapshotFile = fopen($snapshotFilePath, 'rb');
 
         if ($snapshotFile === false) {
-            throw new \RuntimeException("Could not open snapshot file [{$snapshotFilePath}].");
+            throw new RuntimeException("Could not open snapshot file [{$snapshotFilePath}].");
         }
 
         $buffering = false;
@@ -214,7 +242,7 @@ class DirectorySnapshot extends AbstractSnapshot
             $line = fgets($snapshotFile);
 
             if ($line === false) {
-                throw new \RuntimeException("Could not read line from snapshot file [{$snapshotFile}].");
+                throw new RuntimeException("Could not read line from snapshot file [{$snapshotFile}].");
             }
 
             $isStart = $this->matchFilePathStartSection($line) === $fileRelativePath;
@@ -228,13 +256,13 @@ class DirectorySnapshot extends AbstractSnapshot
                 break;
             }
 
-            $contents[] = preg_replace('/[\n\r]$/', '', $line);
+            $contents[] = ((string)preg_replace('/[\n\r]$/', '', $line));
         }
 
         $closed = fclose($snapshotFile);
 
         if ($closed === false) {
-            throw new \RuntimeException("Could not close snapshot file [{$snapshotFilePath}].");
+            throw new RuntimeException("Could not close snapshot file [{$snapshotFilePath}].");
         }
 
         return $contents;
@@ -247,7 +275,7 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @return string The file path, or an empty string if this is not a line in the format of a section header.
      */
-    protected function matchFilePathEndSection(string $string)
+    protected function matchFilePathEndSection(string $string): string
     {
         preg_match('#^<<< (.+) <<<$#', $string, $matches);
 
@@ -259,31 +287,31 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @param string $filePath The path to the file to read.
      *
-     * @return string[]|null[] An array of normalized file contents.
+     * @return string[] An array of normalized file contents.
      *
-     * @throws \RuntimeException If there's an error while reading the file.
+     * @throws RuntimeException If there's an error while reading the file.
      */
     protected function getCurrentFileContents(string $filePath): array
     {
         $file = fopen($filePath, 'rb');
 
         if ($file === false) {
-            throw new \RuntimeException("Could not open file [{$filePath}].");
+            throw new RuntimeException("Could not open file [{$filePath}].");
         }
 
         $contents = [];
         while (!feof($file)) {
-            $line      = fgets($file);
+            $line = fgets($file);
             if ($line === false) {
                 $line = '';
             }
-            $contents[] = preg_replace('/[\n\r]$/', '', $line);
+            $contents[] = (string)preg_replace('/[\n\r]$/', '', $line);
         }
 
         $closed = fclose($file);
 
         if ($closed === false) {
-            throw new \RuntimeException("Could not close snapshot file [{$filePath}].");
+            throw new RuntimeException("Could not close snapshot file [{$filePath}].");
         }
 
         return $contents;
@@ -292,16 +320,20 @@ class DirectorySnapshot extends AbstractSnapshot
     /**
      * Wraps the default assertion in one providing more insights into the failure reasons.
      *
-     * @param array<string>  $expected The expected value.
-     * @param array<string>  $actual   The actual value.
-     * @param string $message  The message to display for the failure, if any.
+     * @param string|string[] $expected The expected value.
+     * @param string|string[] $actual   The actual value.
+     * @param string $message           The message to display for the failure, if any.
      */
-    protected function prettyAssert(array $expected, array $actual, string $message): void
+    protected function prettyAssert(array|string $expected, array|string $actual, string $message): void
     {
         try {
             $this->assertEquals($expected, $actual);
         } catch (ExpectationFailedException $e) {
-            $failure = $e->getComparisonFailure()->toString();
+            $comparisonFailure = $e->getComparisonFailure();
+            if ($comparisonFailure === null) {
+                throw $e;
+            }
+            $failure = $comparisonFailure->toString();
             throw new ExpectationFailedException($message . PHP_EOL . PHP_EOL . $failure);
         }
     }

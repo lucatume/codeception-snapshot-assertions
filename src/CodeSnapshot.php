@@ -21,10 +21,10 @@ class CodeSnapshot extends StringSnapshot
     /**
      * CodeSnapshot constructor.
      *
-     * @param  null    $current    The current value.
-     * @param  string  $extension  The file extension to use for the snapshot, without the leading dot.
+     * @param  null    $current The current value.
+     * @param string $extension The file extension to use for the snapshot, without the leading dot.
      */
-    public function __construct($current = null, $extension = 'php')
+    public function __construct($current = null, string $extension = 'php')
     {
         parent::__construct($current);
         $this->extension = trim($extension, '.');

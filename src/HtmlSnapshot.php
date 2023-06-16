@@ -7,10 +7,12 @@
 
 namespace tad\Codeception\SnapshotAssertions;
 
+use Gajus\Dindent\Exception\RuntimeException;
 use Gajus\Dindent\Indenter;
 
 /**
  * Class HtmlSnapshot
+ *
  * @package tad\Codeception\SnapshotAssertions
  */
 class HtmlSnapshot extends StringSnapshot
@@ -18,13 +20,12 @@ class HtmlSnapshot extends StringSnapshot
     /**
      * An instance of the HTML indenter.
      */
-    protected \Gajus\Dindent\Indenter $indenter;
+    protected Indenter $indenter;
 
     /**
      * HtmlSnapshot constructor.
-     * @param  string  $current  The current HTML fragment.
-     * @throws \Gajus\Dindent\Exception\InvalidArgumentException If the set of options used to initialize the
-     *                           indenter are not correct.
+     *
+     * @param null $current The current HTML fragment.
      */
     public function __construct($current = null)
     {
@@ -48,17 +49,26 @@ class HtmlSnapshot extends StringSnapshot
      * @param string $data The data, an HTML string, to check.
      *
      *
-     * @throws \Gajus\Dindent\Exception\RuntimeException If there's an issue during the HTML string parsing.
+     * @throws RuntimeException If there's an issue during the HTML string parsing.
      */
     protected function assertData($data): void
     {
         if ($this->dataVisitor !== null) {
-            list($data, $dataSet) = call_user_func($this->dataVisitor, $data, $this->dataSet);
+            $visited = call_user_func($this->dataVisitor, $data, $this->dataSet);
+            if (!(is_array($visited) && count($visited) === 2 && is_string($visited[0]) && is_string($visited[1]))) {
+                throw new RuntimeException('The data visitor must return an array of two strings.');
+            }
+            [$data, $dataSet] = $visited;
+
             $this->dataSet = $dataSet;
+        }
+
+        if (!is_string($this->dataSet)) {
+            throw new RuntimeException('The data set must be a string.');
         }
 
         $indent = $this->indenter->indent($this->dataSet);
         $indent1 = $this->indenter->indent($data);
-        static::assertEquals($indent, $indent1);
+        $this->assertEquals($indent, $indent1);
     }
 }

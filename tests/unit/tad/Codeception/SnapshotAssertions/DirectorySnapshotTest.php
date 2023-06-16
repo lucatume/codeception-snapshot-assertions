@@ -156,4 +156,26 @@ TXT;
         $failingSnapshot->setSnapshotFileName($snapshotFileName);
         $failingSnapshot->assert();
     }
+
+    /**
+     * It should throw if trying to build on non string
+     *
+     * @test
+     */
+    public function should_throw_if_trying_to_build_on_non_string(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        new DirectorySnapshot(['foo-bar' => 'baz']);
+    }
+
+    /**
+     * It should throw if trying to build on non-existing directory
+     *
+     * @test
+     */
+    public function should_throw_if_trying_to_build_on_non_existing_directory(): void
+    {
+        $this->expectException(\InvalidArgumentException::class);
+        new DirectorySnapshot(__DIR__ . '/not-existing');
+    }
 }
