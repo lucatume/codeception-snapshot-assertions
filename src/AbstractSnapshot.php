@@ -11,12 +11,17 @@ use Codeception\Exception\ContentNotFound;
 use Codeception\Snapshot;
 use Codeception\Util\Debug;
 use Codeception\Util\ReflectionHelper;
+use Exception;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionMethod;
 use RuntimeException;
 
 /**
  * Class AbstractSnapshot
+ *
  * @package tad\Codeception\SnapshotAssertions
  */
 class AbstractSnapshot extends Snapshot
@@ -24,23 +29,16 @@ class AbstractSnapshot extends Snapshot
     /**
      * Keeps a counter for each class, function and data-set combination.
      *
-     * @var array<string,array>
+     * @var array<string,array<string,int>>
      */
-    protected static $counters = [];
+    protected static array $counters = [];
 
     /**
      * A list of method names provided by the SnapshotAssertions trait.
      *
      * @var array<string>
      */
-    protected static $traitMethods = [];
-
-    /**
-     * The current content.
-     *
-     * @var string
-     */
-    protected $current = '';
+    protected static array $traitMethods = [];
 
     /**
      * The callback that will be called on each data entry of the snapshot.
@@ -52,20 +50,18 @@ class AbstractSnapshot extends Snapshot
     /**
      * Snapshot constructor.
      *
-     * @param  mixed  $current  The current value.
+     * @param array<int|string,mixed>|string|false|null $current The current value.
      */
-    public function __construct($current = null)
+    public function __construct(protected mixed $current = null)
     {
-        $this->current = $current;
     }
 
     /**
      * Returns the absolute path to the snapshot file that has been, or will be, generated.
      *
-     * @return string
-     * @throws \ReflectionException If there's an error while building the class reflection.
+     * @throws ReflectionException If there's an error while building the class reflection.
      */
-    public function snapshotFileName()
+    public function snapshotFileName(): string
     {
         return $this->getFileName();
     }
@@ -74,17 +70,20 @@ class AbstractSnapshot extends Snapshot
      * Returns the path to the snapshot file that will be, or has been generated, including the file extension.
      *
      * @return string The snapshot file name, including the file extension.
-     * @throws \ReflectionException If the class that called the class cannot be reflected.
+     * @throws ReflectionException If the class that called the class cannot be reflected.
      */
-    protected function getFileName()
+    protected function getFileName(): string
     {
         if (empty($this->fileName)) {
             $traitMethods = static::getTraitMethods();
             $backtrace = array_values(array_filter(
-                debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS
-                    | DEBUG_BACKTRACE_PROVIDE_OBJECT, 5),
-                static function (array $backtraceEntry) use ($traitMethods) {
-                    return !in_array(
+                debug_backtrace(
+                    DEBUG_BACKTRACE_IGNORE_ARGS
+                    | DEBUG_BACKTRACE_PROVIDE_OBJECT,
+                    5
+                ),
+                static function (array $backtraceEntry) use ($traitMethods): bool {
+                    return isset($backtraceEntry['class']) && !in_array(
                         $backtraceEntry['class'],
                         [Snapshot::class, static::class, self::class, SnapshotAssertions::class],
                         true
@@ -94,21 +93,21 @@ class AbstractSnapshot extends Snapshot
             $class = $backtrace[0]['class'];
             $classFrags = explode('\\', $class);
             $classBasename = array_pop($classFrags);
-            $classFile = (new \ReflectionClass($class))->getFileName();
+            $classFile = (new ReflectionClass($class))->getFileName();
 
             if ($classFile === false) {
-                throw new \RuntimeException('Cannot get the filename of the class ' . $class);
+                throw new RuntimeException('Cannot get the filename of the class ' . $class);
             }
 
             $classDir = dirname($classFile);
             $function = $backtrace[0]['function'];
             $dataSetFrag = '';
-            if ($backtrace[0]['object'] instanceof TestCase) {
+            if (isset($backtrace[0]['object']) && $backtrace[0]['object'] instanceof TestCase) {
                 /** @var TestCase $testCase */
                 $testCase = $backtrace[0]['object'];
                 $dataName = $this->getDataName($testCase);
                 if ($dataName !== '') {
-                    $dataSetFrag = '__'.$dataName;
+                    $dataSetFrag = '__' . $dataName;
                 }
             }
             $fileName = sprintf(
@@ -119,7 +118,7 @@ class AbstractSnapshot extends Snapshot
                 $this->getCounterFor($class, $function, $dataSetFrag),
                 $this->fileExtension()
             );
-            $this->fileName = $classDir.'/__snapshots__/'.$fileName;
+            $this->fileName = $classDir . '/__snapshots__/' . $fileName;
         }
 
         return $this->fileName;
@@ -130,16 +129,15 @@ class AbstractSnapshot extends Snapshot
      *
      * @return array<string> An array of the trait method names.
      *
-     * @throws \ReflectionException If a reflection cannot be done on a trait method.
      */
-    protected static function getTraitMethods()
+    protected static function getTraitMethods(): array
     {
         if (!empty(static::$traitMethods)) {
             return static::$traitMethods;
         }
 
-        $reflection = new \ReflectionClass(SnapshotAssertions::class);
-        static::$traitMethods = array_map(function (\ReflectionMethod $method) {
+        $reflection = new ReflectionClass(SnapshotAssertions::class);
+        static::$traitMethods = array_map(static function (ReflectionMethod $method): string {
             return $method->name;
         }, $reflection->getMethods());
 
@@ -149,13 +147,13 @@ class AbstractSnapshot extends Snapshot
     /**
      * Returns the counter, an integer, for a class, methdo and data-set combination.
      *
-     * @param  string  $class        The class to return the counter for.
-     * @param  string  $function     The function/method to return the counter for.
-     * @param  string  $dataSetName  The name of the current dataset, if any.
+     * @param string $class       The class to return the counter for.
+     * @param string $function    The function/method to return the counter for.
+     * @param string $dataSetName The name of the current dataset, if any.
      *
      * @return int The counter, managed on a static level, for the combination.
      */
-    protected function getCounterFor($class, $function, $dataSetName = '')
+    protected function getCounterFor(string $class, string $function, string $dataSetName = ''): int
     {
         $function .= $dataSetName;
 
@@ -171,7 +169,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @return string The file extension, without the leading dot, of the snapshot the class will generate.
      */
-    public function fileExtension()
+    public function fileExtension(): string
     {
         return 'snapshot';
     }
@@ -181,15 +179,14 @@ class AbstractSnapshot extends Snapshot
      *
      * This method is useful to create, or overwrite, the contents of the snapshot during tests.
      *
-     * @param mixed $contents The snapshot contents.
+     * @param string|false $contents The snapshot contents.
      *
-     * @throws \ReflectionException
-     *
-     * @return void
+     * @throws ReflectionException
+     * @throws Exception
      */
-    public function snapshotPutContents($contents)
+    public function snapshotPutContents(string|false $contents): void
     {
-        $dataSetBackup = $this->dataSet;
+        $dataSetBackup = empty($this->dataSet) ? false : $this->dataSet;
         $this->dataSet = $contents;
         $this->save();
         $this->dataSet = $dataSetBackup;
@@ -198,17 +195,15 @@ class AbstractSnapshot extends Snapshot
     /**
      * Saves the snapshot contents to the snapshot file.
      *
-     * @throws \Exception If there's an issue reading or saving the snapshot.
-     *
-     * @return void
+     * @throws Exception If there's an issue reading or saving the snapshot.
      */
-    protected function save()
+    protected function save(): void
     {
         $fileName = $this->getFileName();
         $snapshotsDir = dirname($fileName);
 
         if (!is_dir($snapshotsDir) && !mkdir($snapshotsDir, 0777, true) && !is_dir($snapshotsDir)) {
-            throw new \RuntimeException(sprintf('Snapshots directory "%s" was not created', $snapshotsDir));
+            throw new RuntimeException(sprintf('Snapshots directory "%s" was not created', $snapshotsDir));
         }
 
         file_put_contents($fileName, $this->prepareSnapshotForDump());
@@ -217,9 +212,9 @@ class AbstractSnapshot extends Snapshot
     /**
      * Prepares the snapshot before it's dumped into a snapshot file.
      *
-     * @return mixed The prepared snapshot contents.
+     * @return string|false The prepared snapshot contents.
      */
-    public function prepareSnapshotForDump()
+    public function prepareSnapshotForDump(): string|false
     {
         return $this->dataSet;
     }
@@ -227,22 +222,23 @@ class AbstractSnapshot extends Snapshot
     /**
      * Asserts the current contents match the contents of the snapshot.
      *
-     * @return void
      *
-     * @throws \ReflectionException If there's an issue building the snapshot file name.
+     * @throws ReflectionException If there's an issue building the snapshot file name.
+     * @throws Exception
+     * @throws Exception
      */
-    public function assert()
+    public function assert(): void
     {
         // Fetch data.
         $data = $this->fetchData();
 
-        if ($this->isEmptyData($data)) {
+        if ($data === false) {
             throw new ContentNotFound("Fetched snapshot is empty.");
         }
 
         $this->load();
 
-        if (!$this->dataSet) {
+        if (empty($this->dataSet)) {
             $this->printDebug('Snapshot is empty. Updating snapshot...');
             $this->dataSet = $data;
             $this->save();
@@ -277,35 +273,23 @@ class AbstractSnapshot extends Snapshot
      *
      * This override of the base method will, by default, return the current data.
      *
-     * @return mixed The fetched data, the current data by default.
+     * @return string|false The fetched data, the current data by default.
      */
-    protected function fetchData()
+    protected function fetchData(): string|false
     {
+        if (!(is_string($this->current) || $this->current === false)) {
+            throw new RuntimeException('Current data must be a string or false');
+        }
         return $this->current;
-    }
-
-    /**
-     * Whether the data is empty or not.
-     *
-     * Extending classes can override this method to implement more sofisticated checks.
-     *
-     * @param  mixed  $data  The data to check.
-     *
-     * @return bool Whether the data can be considered empty, hence invalid, or not.
-     */
-    protected function isEmptyData($data)
-    {
-        return !$data;
     }
 
     /**
      * Loads the data set from the snapshot.
      *
-     * @return void
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
-    protected function load()
+    protected function load(): void
     {
         if (!file_exists($this->getFileName())) {
             return;
@@ -320,54 +304,58 @@ class AbstractSnapshot extends Snapshot
     /**
      * Copy and paste of the bae method to allow for easier debug.
      *
-     * @param  string  $message  The message to print in debug.
+     * @param string $message The message to print in debug.
      *
      * @return void
      */
-    protected function printDebug($message)
+    protected function printDebug(string $message): void
     {
-        Debug::debug(get_class($this).': '.$message);
+        Debug::debug($this::class . ': ' . $message);
     }
+
     /**
- * Returns the data name taking care of doing so in a way that is compatible with different PHPUnit versions.
- *
- * @param  TestCase  $testCase The current test case.
- *
- * @return string The data name if available or an empty string if not available.
- */
-    protected function getDataName(TestCase $testCase)
+     * Returns the data name taking care of doing so in a way that is compatible with different PHPUnit versions.
+     *
+     * @param TestCase $testCase The current test case.
+     *
+     * @return string The data name if available or an empty string if not available.
+     */
+    protected function getDataName(TestCase $testCase): string
     {
         if (method_exists($testCase, 'dataName')) {
             return (string)$testCase->dataName();
         }
 
         $candidates = array_reverse(class_parents($testCase));
-        $testCaseClass = get_class($testCase);
+        $testCaseClass = $testCase::class;
         $candidates[$testCaseClass] = $testCaseClass;
-        $read = '';
         foreach (array_reverse($candidates) as $class) {
             try {
-                $read = (string)ReflectionHelper::readPrivateProperty($testCase, 'dataName', $class);
-            } catch (\ReflectionException $e) {
-                continue;
+                $read = ReflectionHelper::readPrivateProperty($testCase, 'dataName', $class);
+
+                if (is_string($read)) {
+                    return $read;
+                }
+            } catch (ReflectionException) {
             }
-            break;
         }
 
-        return $read;
+        return '';
     }
 
     /**
      * Overrides the base implementation to add a pre-assertion data handler.
      *
      * @param mixed $data The data to check.
-     *
-     * @return void
      */
-    protected function assertData($data)
+    protected function assertData(mixed $data): void
     {
         if ($this->dataVisitor !== null) {
-            list($data, $dataSet) = call_user_func($this->dataVisitor, $data, $this->dataSet);
+            $visited = call_user_func($this->dataVisitor, $data, $this->dataSet);
+            if (!(is_array($visited) && count($visited) === 2 && is_string($visited[0]) && is_string($visited[1]))) {
+                throw new RuntimeException('Data visitor must return an array with two string elements');
+            }
+            [$data, $dataSet] = $visited;
             $this->dataSet = $dataSet;
         }
 
@@ -380,10 +368,8 @@ class AbstractSnapshot extends Snapshot
      * @param callable $dataVisitor The data visitor that will be called on each visit of a snapshot "node".
      *                              The parameters passed to the visitor will be different for each snapshot; usually
      *                              the expected data and the current data.
-     *
-     * @return void
      */
-    public function setDataVisitor(callable $dataVisitor)
+    public function setDataVisitor(callable $dataVisitor): void
     {
         $this->dataVisitor = $dataVisitor;
     }
@@ -394,10 +380,8 @@ class AbstractSnapshot extends Snapshot
      * @param string $snapshotFileName The absolute path to the file the snapshot file should use.
      *                                 This value is, usually, the one produced by another snapshot `snapshotFileName()`
      *                                 method.
-     *
-     * @return void
      */
-    public function setSnapshotFileName($snapshotFileName)
+    public function setSnapshotFileName(string $snapshotFileName): void
     {
         $this->fileName = $snapshotFileName;
     }

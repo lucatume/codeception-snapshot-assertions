@@ -9,7 +9,7 @@ class SnapshotAssertionsTest extends BaseTestCase
      *
      * @test
      */
-    public function should_correctly_name_snapshot_files()
+    public function should_correctly_name_snapshot_files(): void
     {
         $stringSnapshot = new StringSnapshot(' foo ');
         $classFrags = explode('\\', __CLASS__);
@@ -35,7 +35,7 @@ class SnapshotAssertionsTest extends BaseTestCase
      *
      * @test
      */
-    public function should_create_the_snapshot_when_asserting_and_snapshot_is_not_there()
+    public function should_create_the_snapshot_when_asserting_and_snapshot_is_not_there(): void
     {
         $stringSnapshot = new StringSnapshot();
         $this->unlinkAfter[] = $stringSnapshot->snapshotFileName();
@@ -51,7 +51,7 @@ class SnapshotAssertionsTest extends BaseTestCase
      *
      * @test
      */
-    public function should_allow_making_a_string_assertion()
+    public function should_allow_making_a_string_assertion(): void
     {
         $stringSnapshot = new StringSnapshot();
         $this->unlinkAfter[] = $stringSnapshot->snapshotFileName();
@@ -66,7 +66,7 @@ class SnapshotAssertionsTest extends BaseTestCase
      * @test
      * @dataProvider namedDataSets
      */
-    public function should_allow_making_a_string_assertion_for_named_data_sets($string)
+    public function should_allow_making_a_string_assertion_for_named_data_sets(string $string): void
     {
         $this->assertMatchesStringSnapshot($string);
         $classFrags = explode('\\', __CLASS__);
@@ -94,7 +94,7 @@ class SnapshotAssertionsTest extends BaseTestCase
      * @test
      * @dataProvider notNamedDataSet
      */
-    public function should_allow_making_string_assertion_for_not_named_data_set($string)
+    public function should_allow_making_string_assertion_for_not_named_data_set(string $string): void
     {
         $this->assertMatchesStringSnapshot($string);
         $classFrags = explode('\\', __CLASS__);
@@ -116,7 +116,10 @@ class SnapshotAssertionsTest extends BaseTestCase
         $this->unlinkAfter[] = $expectedSnapshotFileName;
     }
 
-    public function namedDataSets()
+    /**
+     * @return array{one: string[], two: string[], snake_case: string[], camelCase: string[]}
+     */
+    public function namedDataSets(): array
     {
         return [
             'one' => ['one'],
@@ -126,7 +129,10 @@ class SnapshotAssertionsTest extends BaseTestCase
         ];
     }
 
-    public function notNamedDataSet()
+    /**
+     * @return array<int, array<string>>
+     */
+    public function notNamedDataSet(): array
     {
         return [
             ['0'],
@@ -140,7 +146,7 @@ class SnapshotAssertionsTest extends BaseTestCase
      *
      * @test
      */
-    public function should_allow_making_a_partial_html_assertion()
+    public function should_allow_making_a_partial_html_assertion(): void
     {
         $html = '<main><p>Some text</p></main>';
         $htmlSnapshot = new HtmlSnapshot();
@@ -154,7 +160,7 @@ class SnapshotAssertionsTest extends BaseTestCase
      *
      * @test
      */
-    public function should_allow_making_json_assertions()
+    public function should_allow_making_json_assertions(): void
     {
         $json = json_encode([
             'one' => 'two',
@@ -173,7 +179,7 @@ class SnapshotAssertionsTest extends BaseTestCase
      *
      * @test
      */
-    public function should_allow_making_code_assertions()
+    public function should_allow_making_code_assertions(): void
     {
         $code = '<?php echo "foo";';
         $codeSnapshot = new CodeSnapshot($code);
@@ -187,7 +193,7 @@ class SnapshotAssertionsTest extends BaseTestCase
      *
      * @test
      */
-    public function should_allow_making_code_assertions_specifying_extension()
+    public function should_allow_making_code_assertions_specifying_extension(): void
     {
         $code = 'let foo = bar';
         $codeSnapshot = new CodeSnapshot($code, 'js');

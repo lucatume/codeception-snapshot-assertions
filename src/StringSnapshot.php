@@ -9,6 +9,7 @@ namespace tad\Codeception\SnapshotAssertions;
 
 /**
  * Class StringSnapshot
+ *
  * @package tad\Codeception\SnapshotAssertions
  */
 class StringSnapshot extends AbstractSnapshot
@@ -16,7 +17,7 @@ class StringSnapshot extends AbstractSnapshot
     /**
      * {@inheritDoc}
      */
-    public function fileExtension()
+    public function fileExtension(): string
     {
         return 'snapshot.txt';
     }
@@ -24,7 +25,7 @@ class StringSnapshot extends AbstractSnapshot
     /**
      * StringSnapshot constructor.
      *
-     * @param  null|mixed  $current The current value.
+     * @param null|mixed $current The current value.
      */
     public function __construct($current = null)
     {
@@ -37,7 +38,7 @@ class StringSnapshot extends AbstractSnapshot
      *
      * @return string The string representation of the current value.
      */
-    protected function fetchData()
+    protected function fetchData(): string
     {
         return $this->stringify($this->current);
     }
@@ -49,32 +50,22 @@ class StringSnapshot extends AbstractSnapshot
      *
      * @return string The string representation of the value.
      */
-    protected function stringify($value)
+    protected function stringify(mixed $value): string
     {
-        $stringified = $value;
-
         if (is_array($value)) {
-            $stringified = serialize($value);
+            return serialize($value);
         }
+
         if (is_object($value)) {
-            $stringified = method_exists($value, '__toString') ?
+            return method_exists($value, '__toString') ?
                 $value->__toString()
                 : json_encode($value, JSON_PRETTY_PRINT);
         }
 
-        return (string)$stringified;
-    }
+        if (is_scalar($value) || $value === null) {
+            return (string)$value;
+        }
 
-    /**
-     *
-     *
-     * @param  mixed  $data  The data to check for emptyness.
-     *
-     * @return bool
-     * @since TBD
-     */
-    protected function isEmptyData($data)
-    {
-        return $this->stringify($data) === '';
+        throw new \InvalidArgumentException('The value must be scalar, null or an object.');
     }
 }
