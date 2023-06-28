@@ -30,8 +30,8 @@ class BaseVisitorTest extends BaseTestCase
         // This first snapshot will create the first HTML snapshot.
         $firstSnapshot = new JsonSnapshot($jsonOne);
         $firstSnapshot->setDataVisitor($dataVisitor);
-        $firstSnapshot->assert();
         $snapshotFileName = $firstSnapshot->snapshotFileName();
+        $firstSnapshot->assert();
         $this->unlinkAfter[] = $snapshotFileName;
 
         // This second snapshot will compare new data to the existing one.

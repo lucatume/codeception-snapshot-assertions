@@ -17,7 +17,7 @@ class SnapshotAssertionsTest extends BaseTestCase
         $methodFrags = explode('::', __METHOD__);
         $method = end($methodFrags);
         $expectedSnapshotFileName = __DIR__
-            .sprintf(
+            . sprintf(
                 '/__snapshots__/%s__%s__%d.%s',
                 $class,
                 $method,
@@ -38,12 +38,13 @@ class SnapshotAssertionsTest extends BaseTestCase
     public function should_create_the_snapshot_when_asserting_and_snapshot_is_not_there(): void
     {
         $stringSnapshot = new StringSnapshot();
-        $this->unlinkAfter[] = $stringSnapshot->snapshotFileName();
+        $snapshot = $stringSnapshot->snapshotFileName();
+        $this->unlinkAfter[] = $snapshot;
         $this->assertFileNotExists($stringSnapshot->snapshotFileName());
 
         $this->assertMatchesStringSnapshot('foo');
 
-        $this->assertFileExists($stringSnapshot->snapshotFileName());
+        $this->assertFileExists($snapshot);
     }
 
     /**
@@ -54,7 +55,8 @@ class SnapshotAssertionsTest extends BaseTestCase
     public function should_allow_making_a_string_assertion(): void
     {
         $stringSnapshot = new StringSnapshot();
-        $this->unlinkAfter[] = $stringSnapshot->snapshotFileName();
+        $snapshot = $stringSnapshot->snapshotFileName();
+        $this->unlinkAfter[] = $snapshot;
         $stringSnapshot->snapshotPutContents('foo');
 
         $this->assertMatchesStringSnapshot('foo');
@@ -75,7 +77,7 @@ class SnapshotAssertionsTest extends BaseTestCase
         $method = end($methodFrags);
         $stringSnapshot = new StringSnapshot();
         $expectedSnapshotFileName = __DIR__
-            .sprintf(
+            . sprintf(
                 '/__snapshots__/%s__%s__%s__%d.%s',
                 $class,
                 $method,
@@ -103,7 +105,7 @@ class SnapshotAssertionsTest extends BaseTestCase
         $method = end($methodFrags);
         $stringSnapshot = new StringSnapshot();
         $expectedSnapshotFileName = __DIR__
-            .sprintf(
+            . sprintf(
                 '/__snapshots__/%s__%s__%s__%d.%s',
                 $class,
                 $method,
@@ -169,7 +171,8 @@ class SnapshotAssertionsTest extends BaseTestCase
             'zero' => 0,
         ]);
         $jsonSnapshot = new JsonSnapshot();
-        $this->unlinkAfter[] = $jsonSnapshot->snapshotFileName();
+        $snapshot = $jsonSnapshot->snapshotFileName();
+        $this->unlinkAfter[] = $snapshot;
         $jsonSnapshot->snapshotPutContents($json);
         $this->assertMatchesJsonSnapshot($json);
     }
@@ -183,7 +186,8 @@ class SnapshotAssertionsTest extends BaseTestCase
     {
         $code = '<?php echo "foo";';
         $codeSnapshot = new CodeSnapshot($code);
-        $this->unlinkAfter[] = $codeSnapshot->snapshotFileName();
+        $snapshot = $codeSnapshot->snapshotFileName();
+        $this->unlinkAfter[] = $snapshot;
         $codeSnapshot->snapshotPutContents($code);
         $this->assertMatchesCodeSnapshot($code);
     }
@@ -197,8 +201,9 @@ class SnapshotAssertionsTest extends BaseTestCase
     {
         $code = 'let foo = bar';
         $codeSnapshot = new CodeSnapshot($code, 'js');
-        $this->unlinkAfter[] = $codeSnapshot->snapshotFileName();
+        $snapshot = $codeSnapshot->snapshotFileName();
+        $this->unlinkAfter[] = $snapshot;
         $codeSnapshot->snapshotPutContents($code);
-        $this->assertMatchesCodeSnapshot($code);
+        $this->assertMatchesCodeSnapshot($code, 'js');
     }
 }

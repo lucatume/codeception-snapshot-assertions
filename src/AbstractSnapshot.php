@@ -69,59 +69,65 @@ class AbstractSnapshot extends Snapshot
     /**
      * Returns the path to the snapshot file that will be, or has been generated, including the file extension.
      *
+     * @param bool $increment Whether to increment the counter for the current class, function and data-set combination.
+     *
      * @return string The snapshot file name, including the file extension.
      * @throws ReflectionException If the class that called the class cannot be reflected.
      */
-    protected function getFileName(): string
+    protected function getFileName(bool $increment = false): string
     {
-        if (empty($this->fileName)) {
-            $traitMethods = static::getTraitMethods();
-            $backtrace = array_values(array_filter(
-                debug_backtrace(
-                    DEBUG_BACKTRACE_IGNORE_ARGS
-                    | DEBUG_BACKTRACE_PROVIDE_OBJECT,
-                    5
-                ),
-                static function (array $backtraceEntry) use ($traitMethods): bool {
-                    return isset($backtraceEntry['class']) && !in_array(
-                        $backtraceEntry['class'],
-                        [Snapshot::class, static::class, self::class, SnapshotAssertions::class],
-                        true
-                    ) && !in_array($backtraceEntry['function'], $traitMethods, true);
-                }
-            ));
-            $class = $backtrace[0]['class'];
-            $classFrags = explode('\\', $class);
-            $classBasename = array_pop($classFrags);
-            $classFile = (new ReflectionClass($class))->getFileName();
-
-            if ($classFile === false) {
-                throw new RuntimeException('Cannot get the filename of the class ' . $class);
-            }
-
-            $classDir = dirname($classFile);
-            $function = $backtrace[0]['function'];
-            $dataSetFrag = '';
-            if (isset($backtrace[0]['object']) && $backtrace[0]['object'] instanceof TestCase) {
-                /** @var TestCase $testCase */
-                $testCase = $backtrace[0]['object'];
-                $dataName = $this->getDataName($testCase);
-                if ($dataName !== '') {
-                    $dataSetFrag = '__' . $dataName;
-                }
-            }
-            $fileName = sprintf(
-                '%s__%s%s__%d.%s',
-                $classBasename,
-                $function,
-                $dataSetFrag,
-                $this->getCounterFor($class, $function, $dataSetFrag),
-                $this->fileExtension()
-            );
-            $this->fileName = $classDir . '/__snapshots__/' . $fileName;
+        if ($this->fileName !== null) {
+            return $this->fileName;
         }
 
-        return $this->fileName;
+        $traitMethods = static::getTraitMethods();
+        $backtrace = array_values(array_filter(
+            debug_backtrace(
+                DEBUG_BACKTRACE_IGNORE_ARGS
+                | DEBUG_BACKTRACE_PROVIDE_OBJECT,
+                5
+            ),
+            static function (array $backtraceEntry) use ($traitMethods): bool {
+                return isset($backtraceEntry['class']) && !in_array(
+                    $backtraceEntry['class'],
+                    [Snapshot::class, static::class, self::class, SnapshotAssertions::class],
+                    true
+                ) && !in_array($backtraceEntry['function'], $traitMethods, true);
+            }
+        ));
+        $class = $backtrace[0]['class'];
+        $classFrags = explode('\\', $class);
+        $classBasename = array_pop($classFrags);
+        $classFile = (new ReflectionClass($class))->getFileName();
+
+        if ($classFile === false) {
+            throw new RuntimeException('Cannot get the filename of the class ' . $class);
+        }
+
+        $classDir = dirname($classFile);
+        $function = $backtrace[0]['function'];
+        $dataSetFrag = '';
+        if (isset($backtrace[0]['object']) && $backtrace[0]['object'] instanceof TestCase) {
+            /** @var TestCase $testCase */
+            $testCase = $backtrace[0]['object'];
+            $dataName = $this->getDataName($testCase);
+            if ($dataName !== '') {
+                $dataSetFrag = '__' . $dataName;
+            }
+        }
+
+        $fileNameTemplate = sprintf(
+            '%s__%s%s__{{ counter }}.%s',
+            $classBasename,
+            $function,
+            $dataSetFrag,
+            $this->fileExtension()
+        );
+        $fileNameTemplate = $classDir . '/__snapshots__/' . $fileNameTemplate;
+
+        $counter = $this->getCounterFor($class, $function, $dataSetFrag, $increment);
+
+        return str_replace('{{ counter }}', (string)$counter, $fileNameTemplate);
     }
 
     /**
@@ -150,16 +156,21 @@ class AbstractSnapshot extends Snapshot
      * @param string $class       The class to return the counter for.
      * @param string $function    The function/method to return the counter for.
      * @param string $dataSetName The name of the current dataset, if any.
+     * @param bool $increment     Whether to increment the counter for the current class, function and data-set
+     *                            combination.
      *
      * @return int The counter, managed on a static level, for the combination.
      */
-    protected function getCounterFor(string $class, string $function, string $dataSetName = ''): int
-    {
+    protected function getCounterFor(
+        string $class,
+        string $function,
+        string $dataSetName = '',
+        bool $increment = false
+    ): int {
         $function .= $dataSetName;
 
         if (isset(static::$counters[$class][$function])) {
-            static::$counters[$class][$function]++;
-            return static::$counters[$class][$function];
+            return $increment ? static::$counters[$class][$function]++ : static::$counters[$class][$function];
         }
         static::$counters[$class][$function] = 0;
         return 0;
@@ -189,18 +200,21 @@ class AbstractSnapshot extends Snapshot
     {
         $dataSetBackup = empty($this->dataSet) ? false : $this->dataSet;
         $this->dataSet = $contents;
-        $this->save();
+        $this->save(false);
         $this->dataSet = $dataSetBackup;
     }
 
     /**
      * Saves the snapshot contents to the snapshot file.
      *
+     * @param bool $increment Whether to increment the counter for the current class, function and data-set combination.
+     *
      * @throws Exception If there's an issue reading or saving the snapshot.
      */
-    protected function save(): void
+    protected function save(bool $increment = true): void
     {
-        $fileName = $this->getFileName();
+        $fileName = $this->getFileName($increment);
+        $this->fileName = null;
         $snapshotsDir = dirname($fileName);
 
         if (!is_dir($snapshotsDir) && !mkdir($snapshotsDir, 0777, true) && !is_dir($snapshotsDir)) {
@@ -249,6 +263,8 @@ class AbstractSnapshot extends Snapshot
         try {
             $this->assertData($data);
             $this->printDebug('Data matches snapshot');
+            // Increment the file name to make sure the next assertion will run correctly.
+            $this->getFileName(true);
         } catch (AssertionFailedError $exception) {
             $this->printDebug('Snapshot assertion failed');
 
@@ -296,10 +312,11 @@ class AbstractSnapshot extends Snapshot
      */
     protected function load(): void
     {
-        if (!file_exists($this->getFileName())) {
+        $filename = $this->getFileName();
+        if (!is_file($filename)) {
             return;
         }
-        $this->dataSet = file_get_contents($this->getFileName());
+        $this->dataSet = file_get_contents($filename);
 
         if (!$this->dataSet) {
             throw new ContentNotFound("Loaded snapshot is empty");

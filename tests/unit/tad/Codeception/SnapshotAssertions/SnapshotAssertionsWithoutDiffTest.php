@@ -1,5 +1,9 @@
 <?php
+
 namespace tad\Codeception\SnapshotAssertions;
+
+use Exception;
+use RuntimeException;
 
 class SnapshotAssertionsWithoutDiffTest extends BaseTestCase
 {
@@ -17,31 +21,26 @@ class SnapshotAssertionsWithoutDiffTest extends BaseTestCase
         $hash = md5(random_bytes(10));
         $dir = sys_get_temp_dir() . "/snapshot-assertions-$hash";
         if (!mkdir($dir)) {
-            throw new \RuntimeException("Could not create directory $dir");
+            throw new RuntimeException("Could not create directory $dir");
         }
         if (file_put_contents("$dir/foo.txt", 'foo') === false) {
-            throw new \RuntimeException("Could not create file $dir/foo.txt");
+            throw new RuntimeException("Could not create file $dir/foo.txt");
         }
         if (file_put_contents("$dir/bar.txt", 'bar') === false) {
-            throw new \RuntimeException("Could not create file $dir/bar.txt");
+            throw new RuntimeException("Could not create file $dir/bar.txt");
         }
         // Create a snapshot instance to get the snapshot file path.
         $dirSnapshot = new DirectorySnapshot($dir);
         $snapshot = $dirSnapshot->snapshotFileName();
-        $this->assertFileNotExists($snapshot);
         $this->unlinkAfter[] = $snapshot;
-
-        // Assert a first time to generate the Snapshot.
-        $dirSnapshot->assert();
-        $this->assertFileExists($snapshot);
-        // Add a line to the snapshot file.
-        if (file_put_contents("$dir/baz.txt", 'baz') === false) {
-            throw new \RuntimeException("Could not create file $dir/baz.txt");
+        // Create the snapshot without triggering the count increment.
+        if (file_put_contents($snapshot, $dirSnapshot->prepareSnapshotForDump()) === false) {
+            throw new RuntimeException("Could not create file $snapshot");
         }
 
         try {
             $this->assertMatchesDirectorySnapshot($dir);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->assertFalse(method_exists($e, 'getComparisonFailure'));
         }
     }
@@ -55,16 +54,15 @@ class SnapshotAssertionsWithoutDiffTest extends BaseTestCase
     {
         $codeSnapshot = new CodeSnapshot('<?php echo "foo";');
         $snapshot = $codeSnapshot->snapshotFileName();
-        $this->assertFileNotExists($snapshot);
         $this->unlinkAfter[] = $snapshot;
-
-        // Assert a first time to generate the Snapshot.
-        $codeSnapshot->assert();
-        $this->assertFileExists($snapshot);
+        // Create the snapshot without triggering the count increment.
+        if (file_put_contents($snapshot, '<?php echo "foo";') === false) {
+            throw new RuntimeException("Could not create file $snapshot");
+        }
 
         try {
             $this->assertMatchesCodeSnapshot('<?php echo "bar";');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->assertFalse(method_exists($e, 'getComparisonFailure'));
         }
     }
@@ -78,16 +76,15 @@ class SnapshotAssertionsWithoutDiffTest extends BaseTestCase
     {
         $stringSnapshot = new StringSnapshot('Hello there');
         $snapshot = $stringSnapshot->snapshotFileName();
-        $this->assertFileNotExists($snapshot);
         $this->unlinkAfter[] = $snapshot;
-
-        // Assert a first time to generate the Snapshot.
-        $stringSnapshot->assert();
-        $this->assertFileExists($snapshot);
+        // Create the snapshot without triggering the count increment.
+        if (file_put_contents($snapshot, 'Hello there') === false) {
+            throw new RuntimeException("Could not create file $snapshot");
+        }
 
         try {
             $this->assertMatchesStringSnapshot('Hello world');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->assertFalse(method_exists($e, 'getComparisonFailure'));
         }
     }
@@ -101,16 +98,15 @@ class SnapshotAssertionsWithoutDiffTest extends BaseTestCase
     {
         $stringSnapshot = new HtmlSnapshot('<p>Hello there</p>');
         $snapshot = $stringSnapshot->snapshotFileName();
-        $this->assertFileNotExists($snapshot);
         $this->unlinkAfter[] = $snapshot;
-
-        // Assert a first time to generate the Snapshot.
-        $stringSnapshot->assert();
-        $this->assertFileExists($snapshot);
+        // Create the snapshot without triggering the count increment.
+        if (file_put_contents($snapshot, '<p>Hello there</p>') === false) {
+            throw new RuntimeException("Could not create file $snapshot");
+        }
 
         try {
             $this->assertMatchesHtmlSnapshot('<p>Hello world<p>');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->assertFalse(method_exists($e, 'getComparisonFailure'));
         }
     }
@@ -124,16 +120,15 @@ class SnapshotAssertionsWithoutDiffTest extends BaseTestCase
     {
         $stringSnapshot = new JsonSnapshot('{"foo":"bar"}');
         $snapshot = $stringSnapshot->snapshotFileName();
-        $this->assertFileNotExists($snapshot);
         $this->unlinkAfter[] = $snapshot;
-
-        // Assert a first time to generate the Snapshot.
-        $stringSnapshot->assert();
-        $this->assertFileExists($snapshot);
+        // Create the snapshot without triggering the count increment.
+        if (file_put_contents($snapshot, '{"foo":"bar"}') === false) {
+            throw new RuntimeException("Could not create file $snapshot");
+        }
 
         try {
             $this->assertMatchesJsonSnapshot('{"foo":"baz"}');
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             $this->assertFalse(method_exists($e, 'getComparisonFailure'));
         }
     }
