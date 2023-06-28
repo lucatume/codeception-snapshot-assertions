@@ -6,8 +6,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.1.0] - 2023-06-28 
 ### Changed
 - Show the snapshot diff by default, deactivate setting the `showSnapshotDiff` property of a `SnapshotAssertions` trait user to `false`.
+- Make the `SnapshotAssertions` trait `public` to allow its use in Actor classes.
+
+### Fixed
+- Ensure multiple snapshot assertions in the context of the same test method do not overwrite each other.
 
 ## [1.0.0] - 2023-06-16
 ### Changed
