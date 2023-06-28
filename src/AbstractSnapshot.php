@@ -158,7 +158,8 @@ class AbstractSnapshot extends Snapshot
         $function .= $dataSetName;
 
         if (isset(static::$counters[$class][$function])) {
-            return static::$counters[$class][$function]++;
+            static::$counters[$class][$function]++;
+            return static::$counters[$class][$function];
         }
         static::$counters[$class][$function] = 0;
         return 0;
