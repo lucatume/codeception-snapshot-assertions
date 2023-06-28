@@ -205,9 +205,9 @@ HTML;
         // This first snapshot will create the first HTML snapshot.
         $firstSnapshot = new HtmlSnapshot($htmlOne);
         $firstSnapshot->setDataVisitor($dataVisitor);
-        $firstSnapshot->assert();
         $snapshotFileName = $firstSnapshot->snapshotFileName();
         $this->unlinkAfter[] = $snapshotFileName;
+        $firstSnapshot->assert();
 
         // This second snapshot will compare new data to the existing one.
         $secondSnapshot = new HtmlSnapshot($htmlTwo);

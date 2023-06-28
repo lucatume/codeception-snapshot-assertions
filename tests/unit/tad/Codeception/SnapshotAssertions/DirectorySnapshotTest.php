@@ -29,12 +29,13 @@ class DirectorySnapshotTest extends BaseTestCase
     public function should_fail_when_snapshots_differ(): void
     {
         $prev =  new DirectorySnapshot(codecept_root_dir('tests/_support'));
+        $snapshot = $prev->snapshotFileName();
+        $this->unlinkAfter[] = $snapshot;
         $prev->assert();
 
         $dirSnapshot = new DirectorySnapshot(codecept_data_dir());
-        $snapshot = $dirSnapshot->snapshotFileName();
+        $dirSnapshot->setSnapshotFileName($snapshot);
         codecept_debug('Snapshot file: ' . $snapshot);
-        $this->unlinkAfter[] = $snapshot;
 
         $this->expectException(AssertionFailedError::class);
 
@@ -49,12 +50,13 @@ class DirectorySnapshotTest extends BaseTestCase
     public function should_succeed_when_snapshots_are_equal(): void
     {
         $prev =  new DirectorySnapshot(codecept_root_dir('tests/_support'));
+        $snapshot = $prev->snapshotFileName();
+        codecept_debug('Snapshot file: ' . $snapshot);
+        $this->unlinkAfter[] = $snapshot;
         $prev->assert();
 
         $dirSnapshot = new DirectorySnapshot(codecept_root_dir('tests/_support'));
-        $snapshot = $dirSnapshot->snapshotFileName();
-        codecept_debug('Snapshot file: ' . $snapshot);
-        $this->unlinkAfter[] = $snapshot;
+        $dirSnapshot->setSnapshotFileName($snapshot);
 
         $dirSnapshot->assert();
     }

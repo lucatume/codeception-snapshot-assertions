@@ -8,6 +8,7 @@
 namespace tad\Codeception\SnapshotAssertions;
 
 use Gajus\Dindent\Exception\InvalidArgumentException;
+use ReflectionException;
 
 /**
  * Trait SnapshotAssertions
@@ -25,7 +26,7 @@ trait SnapshotAssertions
      * @param callable|null $dataVisitor A callable to manipulate the file contents before the assertion. The arguments
      *                                   will be an the expected and the current values (strings).
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function assertMatchesStringSnapshot(string $current, callable $dataVisitor = null): void
     {
@@ -48,7 +49,7 @@ trait SnapshotAssertions
      *                                   will be an the expected and the current values (strings).
      *
      * @throws InvalidArgumentException If the HTML is not valid.
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function assertMatchesHtmlSnapshot(string $current, callable $dataVisitor = null): void
     {
@@ -70,7 +71,7 @@ trait SnapshotAssertions
      * @param callable|null $dataVisitor A callable to manipulate the file contents before the assertion. The arguments
      *                                   will be an the expected and the current values (strings).
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function assertMatchesJsonSnapshot(string $current, callable $dataVisitor = null): void
     {
@@ -93,7 +94,7 @@ trait SnapshotAssertions
      * @param callable|null $dataVisitor A callable to manipulate the file contents before the assertion. The arguments
      *                                   will be an the expected and the current values (strings).
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function assertMatchesCodeSnapshot(
         string $current,
@@ -117,7 +118,7 @@ trait SnapshotAssertions
      *                                   assertion. The arguments will be the expected and current structure. Each an
      *                                   array of files, each file an array of its lines.
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function assertMatchesDirectorySnapshot(string $current, callable $dataVisitor = null): void
     {
