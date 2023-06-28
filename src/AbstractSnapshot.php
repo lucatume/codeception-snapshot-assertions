@@ -264,6 +264,10 @@ class AbstractSnapshot extends Snapshot
                 return;
             }
 
+            if ($this->showDiff) {
+                throw $exception;
+            }
+
             $this->fail($exception->getMessage());
         }
     }

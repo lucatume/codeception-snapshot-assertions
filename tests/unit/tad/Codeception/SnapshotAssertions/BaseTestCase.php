@@ -8,7 +8,10 @@ class BaseTestCase extends Unit
 {
     protected array $unlinkAfter = [];
 
-    protected function _after(): void
+    /**
+     * @after
+     */
+    protected function unlinkFiles(): void
     {
         foreach ($this->unlinkAfter as $file) {
             if (!file_exists($file)) {
