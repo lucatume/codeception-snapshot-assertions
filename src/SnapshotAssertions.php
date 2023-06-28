@@ -30,6 +30,8 @@ trait SnapshotAssertions
     protected function assertMatchesStringSnapshot(string $current, callable $dataVisitor = null): void
     {
         $stringSnapshot = new StringSnapshot($current);
+        $showSnapshotDiff = !property_exists($this, 'showSnapshotDiff') || $this->showSnapshotDiff;
+        $stringSnapshot->shouldShowDiffOnFail($showSnapshotDiff);
         if ($dataVisitor !== null) {
             $stringSnapshot->setDataVisitor($dataVisitor);
         }
@@ -51,6 +53,8 @@ trait SnapshotAssertions
     protected function assertMatchesHtmlSnapshot(string $current, callable $dataVisitor = null): void
     {
         $htmlSnapshot = new HtmlSnapshot($current);
+        $showSnapshotDiff = !property_exists($this, 'showSnapshotDiff') || $this->showSnapshotDiff;
+        $htmlSnapshot->shouldShowDiffOnFail($showSnapshotDiff);
         if ($dataVisitor !== null) {
             $htmlSnapshot->setDataVisitor($dataVisitor);
         }
@@ -71,6 +75,8 @@ trait SnapshotAssertions
     protected function assertMatchesJsonSnapshot(string $current, callable $dataVisitor = null): void
     {
         $jsonSnapshot = new JsonSnapshot($current);
+        $showSnapshotDiff = !property_exists($this, 'showSnapshotDiff') || $this->showSnapshotDiff;
+        $jsonSnapshot->shouldShowDiffOnFail($showSnapshotDiff);
         if ($dataVisitor !== null) {
             $jsonSnapshot->setDataVisitor($dataVisitor);
         }
@@ -95,6 +101,8 @@ trait SnapshotAssertions
         callable $dataVisitor = null
     ): void {
         $codeSnapshot = new CodeSnapshot($current, $extension);
+        $showSnapshotDiff = !property_exists($this, 'showSnapshotDiff') || $this->showSnapshotDiff;
+        $codeSnapshot->shouldShowDiffOnFail($showSnapshotDiff);
         if ($dataVisitor !== null) {
             $codeSnapshot->setDataVisitor($dataVisitor);
         }
@@ -114,6 +122,8 @@ trait SnapshotAssertions
     protected function assertMatchesDirectorySnapshot(string $current, callable $dataVisitor = null): void
     {
         $dirSnapshot = new DirectorySnapshot($current);
+        $showSnapshotDiff = !property_exists($this, 'showSnapshotDiff') || $this->showSnapshotDiff;
+        $dirSnapshot->shouldShowDiffOnFail($showSnapshotDiff);
         if ($dataVisitor !== null) {
             $dirSnapshot->setDataVisitor($dataVisitor);
         }

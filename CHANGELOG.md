@@ -6,6 +6,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+- Show the snapshot diff by default, deactivate setting the `showSnapshotDiff` property of a `SnapshotAssertions` trait user to `false`.
+
 ## [1.0.0] - 2023-06-16
 ### Changed
 - Require PHP 8.0, Codeception 5.0.
