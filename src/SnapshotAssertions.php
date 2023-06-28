@@ -28,7 +28,7 @@ trait SnapshotAssertions
      *
      * @throws ReflectionException
      */
-    protected function assertMatchesStringSnapshot(string $current, callable $dataVisitor = null): void
+    public function assertMatchesStringSnapshot(string $current, callable $dataVisitor = null): void
     {
         $stringSnapshot = new StringSnapshot($current);
         $showSnapshotDiff = !property_exists($this, 'showSnapshotDiff') || $this->showSnapshotDiff;
@@ -51,7 +51,7 @@ trait SnapshotAssertions
      * @throws InvalidArgumentException If the HTML is not valid.
      * @throws ReflectionException
      */
-    protected function assertMatchesHtmlSnapshot(string $current, callable $dataVisitor = null): void
+    public function assertMatchesHtmlSnapshot(string $current, callable $dataVisitor = null): void
     {
         $htmlSnapshot = new HtmlSnapshot($current);
         $showSnapshotDiff = !property_exists($this, 'showSnapshotDiff') || $this->showSnapshotDiff;
@@ -73,7 +73,7 @@ trait SnapshotAssertions
      *
      * @throws ReflectionException
      */
-    protected function assertMatchesJsonSnapshot(string $current, callable $dataVisitor = null): void
+    public function assertMatchesJsonSnapshot(string $current, callable $dataVisitor = null): void
     {
         $jsonSnapshot = new JsonSnapshot($current);
         $showSnapshotDiff = !property_exists($this, 'showSnapshotDiff') || $this->showSnapshotDiff;
@@ -96,7 +96,7 @@ trait SnapshotAssertions
      *
      * @throws ReflectionException
      */
-    protected function assertMatchesCodeSnapshot(
+    public function assertMatchesCodeSnapshot(
         string $current,
         string $extension = 'php',
         callable $dataVisitor = null
@@ -120,7 +120,7 @@ trait SnapshotAssertions
      *
      * @throws ReflectionException
      */
-    protected function assertMatchesDirectorySnapshot(string $current, callable $dataVisitor = null): void
+    public function assertMatchesDirectorySnapshot(string $current, callable $dataVisitor = null): void
     {
         $dirSnapshot = new DirectorySnapshot($current);
         $showSnapshotDiff = !property_exists($this, 'showSnapshotDiff') || $this->showSnapshotDiff;
