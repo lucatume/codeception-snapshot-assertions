@@ -30,7 +30,7 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @param string $dir The directory to build the iterator for.
      *
-     * @return \RecursiveIteratorIterator The recursive directory iterator, built on the specified directory.
+     * @return \RecursiveIteratorIterator<\RecursiveDirectoryIterator> The iterator, built on the specified directory.
      */
     protected function buildIterator($dir)
     {
@@ -125,6 +125,7 @@ class DirectorySnapshot extends AbstractSnapshot
             $sortedFiles
         );
 
+        // @phpstan-ignore-next-line
         uksort($sortedFiles, 'strcasecmp');
         $multiIterator->attachIterator(new \ArrayIterator($sortedFiles));
 
