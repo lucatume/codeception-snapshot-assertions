@@ -7,21 +7,29 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.2.0] - 2023-10-14
+
 ### Added
 
 - support a `snapshot`  configuration parameter in the `codeception.yml`, or `codeception.dist.yml`, file to set the
   snapshot `version` and `refresh` values; see the README.md file for details.
 
-## [1.1.0] - 2023-06-28 
+## [1.1.0] - 2023-06-28
+
 ### Changed
-- Show the snapshot diff by default, deactivate setting the `showSnapshotDiff` property of a `SnapshotAssertions` trait user to `false`.
+
+- Show the snapshot diff by default, deactivate setting the `showSnapshotDiff` property of a `SnapshotAssertions` trait
+  user to `false`.
 - Make the `SnapshotAssertions` trait `public` to allow its use in Actor classes.
 
 ### Fixed
+
 - Ensure multiple snapshot assertions in the context of the same test method do not overwrite each other.
 
 ## [1.0.0] - 2023-06-16
+
 ### Changed
+
 - Require PHP 8.0, Codeception 5.0.
 
 ## [0.4.0] - 2023-10-14
@@ -93,6 +101,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.3.0]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.2.4...0.3.0
 
 [0.4.0]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.3.0...0.4.0
+
+[1.0.0]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.4.0...1.0.0
+
+[1.1.0]: https://github.com/lucatume/codeception-snapshot-assertions/compare/1.0.0...1.1.0
+
+[1.2.0]: https://github.com/lucatume/codeception-snapshot-assertions/compare/1.1.0...1.2.0
 
 [Unreleased]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.2.4...HEAD
 
