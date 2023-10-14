@@ -11,8 +11,12 @@ use Codeception\Exception\ContentNotFound;
 use Codeception\Snapshot;
 use Codeception\Util\Debug;
 use Codeception\Util\ReflectionHelper;
+use Exception;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
+use ReflectionClass;
+use ReflectionException;
+use ReflectionMethod;
 use RuntimeException;
 
 /**
@@ -60,17 +64,22 @@ class AbstractSnapshot extends Snapshot
      * Snapshot constructor.
      *
      * @param  mixed  $current  The current value.
+     * @param bool|null $refresh Whether to refresh the snapshot on failure or not. False will ask, null will read
+     *                           configuration.
      */
-    public function __construct($current = null)
+    public function __construct($current = null, $refresh = null)
     {
         $this->current = $current;
+        $this->refresh = isset($refresh) ?
+            (bool)$refresh
+            : (Configuration::getRefresh() && Debug::isEnabled());
     }
 
     /**
      * Returns the absolute path to the snapshot file that has been, or will be, generated.
      *
      * @return string
-     * @throws \ReflectionException If there's an error while building the class reflection.
+     * @throws ReflectionException If there's an error while building the class reflection.
      */
     public function snapshotFileName()
     {
@@ -81,7 +90,7 @@ class AbstractSnapshot extends Snapshot
      * Returns the path to the snapshot file that will be, or has been generated, including the file extension.
      *
      * @return string The snapshot file name, including the file extension.
-     * @throws \ReflectionException If the class that called the class cannot be reflected.
+     * @throws ReflectionException If the class that called the class cannot be reflected.
      */
     protected function getFileName()
     {
@@ -99,17 +108,17 @@ class AbstractSnapshot extends Snapshot
                 }
             ));
             $class = isset($backtrace[0]['class']) ? $backtrace[0]['class'] : '';
-    
+
             if (empty($class)) {
-                throw new \RuntimeException('Cannot get ithe class name.');
+                throw new RuntimeException('Cannot get ithe class name.');
             }
 
             $classFrags = explode('\\', $class);
             $classBasename = array_pop($classFrags);
-            $classFile = (new \ReflectionClass($class))->getFileName();
+            $classFile = (new ReflectionClass($class))->getFileName();
 
             if ($classFile === false) {
-                throw new \RuntimeException('Cannot get the filename of the class ' . $class);
+                throw new RuntimeException('Cannot get the filename of the class ' . $class);
             }
 
             $classDir = dirname($classFile);
@@ -124,8 +133,9 @@ class AbstractSnapshot extends Snapshot
                 }
             }
             $fileName = sprintf(
-                '%s__%s%s__%d.%s',
+                '%s__%s%s%s__%d.%s',
                 $classBasename,
+                Configuration::getVersion(),
                 $function,
                 $dataSetFrag,
                 $this->getCounterFor($class, $function, $dataSetFrag),
@@ -142,7 +152,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @return array<string> An array of the trait method names.
      *
-     * @throws \ReflectionException If a reflection cannot be done on a trait method.
+     * @throws ReflectionException If a reflection cannot be done on a trait method.
      */
     protected static function getTraitMethods()
     {
@@ -150,8 +160,8 @@ class AbstractSnapshot extends Snapshot
             return static::$traitMethods;
         }
 
-        $reflection = new \ReflectionClass(SnapshotAssertions::class);
-        static::$traitMethods = array_map(function (\ReflectionMethod $method) {
+        $reflection = new ReflectionClass(SnapshotAssertions::class);
+        static::$traitMethods = array_map(function (ReflectionMethod $method) {
             return $method->name;
         }, $reflection->getMethods());
 
@@ -195,7 +205,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @param mixed $contents The snapshot contents.
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      *
      * @return void
      */
@@ -210,7 +220,7 @@ class AbstractSnapshot extends Snapshot
     /**
      * Saves the snapshot contents to the snapshot file.
      *
-     * @throws \Exception If there's an issue reading or saving the snapshot.
+     * @throws Exception If there's an issue reading or saving the snapshot.
      *
      * @return void
      */
@@ -220,7 +230,7 @@ class AbstractSnapshot extends Snapshot
         $snapshotsDir = dirname($fileName);
 
         if (!is_dir($snapshotsDir) && !mkdir($snapshotsDir, 0777, true) && !is_dir($snapshotsDir)) {
-            throw new \RuntimeException(sprintf('Snapshots directory "%s" was not created', $snapshotsDir));
+            throw new RuntimeException(sprintf('Snapshots directory "%s" was not created', $snapshotsDir));
         }
 
         file_put_contents($fileName, $this->prepareSnapshotForDump());
@@ -241,7 +251,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @return void
      *
-     * @throws \ReflectionException If there's an issue building the snapshot file name.
+     * @throws ReflectionException If there's an issue building the snapshot file name.
      */
     public function assert()
     {
@@ -319,7 +329,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @return void
      *
-     * @throws \ReflectionException
+     * @throws ReflectionException
      */
     protected function load()
     {
@@ -364,7 +374,7 @@ class AbstractSnapshot extends Snapshot
         foreach (array_reverse($candidates) as $class) {
             try {
                 $read = (string)ReflectionHelper::readPrivateProperty($testCase, 'dataName', $class);
-            } catch (\ReflectionException $e) {
+            } catch (ReflectionException $e) {
                 continue;
             }
             break;

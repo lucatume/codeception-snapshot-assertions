@@ -6,6 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.3.1] - 2023-10-14
+### Added
+- support a `snapshot`  configuration parameter in the `codeception.yml`, or `codeception.dist.yml`, file to set the snapshot `version` and `refresh` values; see the README.md file for details.
+
 ## [0.3.0] - 2023-09-08
 ### Changed
 - show diff on failure by default
@@ -41,5 +45,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 [0.2.2]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.2.1...0.2.2
 [0.2.3]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.2.2...0.2.3
 [0.2.4]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.2.3...0.2.4
+[0.3.0]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.2.4...0.3.0
+[0.3.1]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.3.0...0.3.1
 [Unreleased]: https://github.com/lucatume/codeception-snapshot-assertions/compare/0.2.4...HEAD
 
