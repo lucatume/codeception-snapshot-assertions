@@ -200,7 +200,7 @@ class ConfigurationTest extends \Codeception\Test\Unit
      *
      * @test
      */
-    public function should_not_refresh_automatically_if_the_snapshot_refresh_set_in_codeception_configuration(): void
+    public function should_not_refresh_automatically_if_the_snapshot_refresh_set_in_codeception_configuration()
     {
         $this->mockCodeceptionConfig([
             'snapshot' => [
@@ -224,7 +224,7 @@ class ConfigurationTest extends \Codeception\Test\Unit
      *
      * @test
      */
-    public function should_not_refresh_automatically_if_debug_enabled_but_refresh_set_to_false(): void
+    public function should_not_refresh_automatically_if_debug_enabled_but_refresh_set_to_false()
     {
         $this->mockCodeceptionConfig([
             'snapshot' => [
