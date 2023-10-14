@@ -51,9 +51,11 @@ class AbstractSnapshot extends Snapshot
      * Snapshot constructor.
      *
      * @param array<int|string,mixed>|string|false|null $current The current value.
+     * @param bool|null $refresh Whether to refresh the snapshot or not.
      */
-    public function __construct(protected mixed $current = null)
+    public function __construct(protected mixed $current = null, bool $refresh = null)
     {
+        $this->refresh = $refresh ?? (Configuration::getRefresh() && Debug::isEnabled());
     }
 
     /**
@@ -117,8 +119,9 @@ class AbstractSnapshot extends Snapshot
         }
 
         $fileNameTemplate = sprintf(
-            '%s__%s%s__{{ counter }}.%s',
+            '%s__%s%s%s__{{ counter }}.%s',
             $classBasename,
+            Configuration::getVersion(),
             $function,
             $dataSetFrag,
             $this->fileExtension()
