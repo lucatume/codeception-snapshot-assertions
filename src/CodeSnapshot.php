@@ -33,6 +33,7 @@ class CodeSnapshot extends StringSnapshot
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function fileExtension(): string
     {
         return 'snapshot.'.$this->extension;

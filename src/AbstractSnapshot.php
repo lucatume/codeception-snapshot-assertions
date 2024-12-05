@@ -53,7 +53,7 @@ class AbstractSnapshot extends Snapshot
      * @param array<int|string,mixed>|string|false|null $current The current value.
      * @param bool|null $refresh Whether to refresh the snapshot or not.
      */
-    public function __construct(protected mixed $current = null, bool $refresh = null)
+    public function __construct(protected mixed $current = null, ?bool $refresh = null)
     {
         $this->refresh = $refresh ?? (Configuration::getRefresh() && Debug::isEnabled());
     }
@@ -76,6 +76,7 @@ class AbstractSnapshot extends Snapshot
      * @return string The snapshot file name, including the file extension.
      * @throws ReflectionException If the class that called the class cannot be reflected.
      */
+    #[\Override]
     protected function getFileName(bool $increment = false): string
     {
         if ($this->fileName !== null) {
@@ -89,13 +90,11 @@ class AbstractSnapshot extends Snapshot
                 | DEBUG_BACKTRACE_PROVIDE_OBJECT,
                 5
             ),
-            static function (array $backtraceEntry) use ($traitMethods): bool {
-                return isset($backtraceEntry['class']) && !in_array(
-                    $backtraceEntry['class'],
-                    [Snapshot::class, static::class, self::class, SnapshotAssertions::class],
-                    true
-                ) && !in_array($backtraceEntry['function'], $traitMethods, true);
-            }
+            static fn(array $backtraceEntry): bool => isset($backtraceEntry['class']) && !in_array(
+                $backtraceEntry['class'],
+                [Snapshot::class, static::class, self::class, SnapshotAssertions::class],
+                true
+            ) && !in_array($backtraceEntry['function'], $traitMethods, true)
         ));
         $class = $backtrace[0]['class'];
         $classFrags = explode('\\', $class);
@@ -146,9 +145,7 @@ class AbstractSnapshot extends Snapshot
         }
 
         $reflection = new ReflectionClass(SnapshotAssertions::class);
-        static::$traitMethods = array_map(static function (ReflectionMethod $method): string {
-            return $method->name;
-        }, $reflection->getMethods());
+        static::$traitMethods = array_map(static fn(ReflectionMethod $method): string => $method->name, $reflection->getMethods());
 
         return static::$traitMethods;
     }
@@ -214,6 +211,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @throws Exception If there's an issue reading or saving the snapshot.
      */
+    #[\Override]
     protected function save(bool $increment = true): void
     {
         $fileName = $this->getFileName($increment);
@@ -245,6 +243,7 @@ class AbstractSnapshot extends Snapshot
      * @throws Exception
      * @throws Exception
      */
+    #[\Override]
     public function assert(): void
     {
         // Fetch data.
@@ -299,6 +298,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @return string|false The fetched data, the current data by default.
      */
+    #[\Override]
     protected function fetchData(): string|false
     {
         if (!(is_string($this->current) || $this->current === false)) {
@@ -313,6 +313,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @throws ReflectionException
      */
+    #[\Override]
     protected function load(): void
     {
         $filename = $this->getFileName();
@@ -335,7 +336,7 @@ class AbstractSnapshot extends Snapshot
      */
     protected function printDebug(string $message): void
     {
-        Debug::debug($this::class . ': ' . $message);
+        Debug::debug(static::class . ': ' . $message);
     }
 
     /**
@@ -373,6 +374,7 @@ class AbstractSnapshot extends Snapshot
      *
      * @param mixed $data The data to check.
      */
+    #[\Override]
     protected function assertData(mixed $data): void
     {
         if ($this->dataVisitor !== null) {

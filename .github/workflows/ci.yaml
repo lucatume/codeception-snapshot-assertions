@@ -38,7 +38,25 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@master
-      - uses: MilesChou/composer-action/8.1/install@master
+      - uses: MilesChou/composer-action/8.2/install@master
       - uses: docker://php:8.2-alpine
+        with:
+          args: vendor/bin/codecept run
+  php83:
+    name: Test on PHP 8.3
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: MilesChou/composer-action/8.3/install@master
+      - uses: docker://php:8.3-alpine
+        with:
+          args: vendor/bin/codecept run
+  php84:
+    name: Test on PHP 8.4
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@master
+      - uses: MilesChou/composer-action/8.4/install@master
+      - uses: docker://php:8.4-alpine
         with:
           args: vendor/bin/codecept run
