@@ -123,7 +123,12 @@ class DirectorySnapshot extends AbstractSnapshot
         $root = rtrim($this->current, '\\/');
         /** @var SplFileInfo[] $files */
         $files = iterator_to_array($currentIterator, false);
-        $currentFiles = array_map(static fn(SplFileInfo $file): string => '/' . ltrim(str_replace($root, '', $file->getPathname()), '/'), $files);
+        $currentFiles = array_map(
+			static function (SplFileInfo $file) use ( $root ): string {
+				return '/' . ltrim( str_replace( $root, '', $file->getPathname() ), '/' );
+			},
+			$files
+        );
 
         usort($currentFiles, 'strcasecmp');
 
