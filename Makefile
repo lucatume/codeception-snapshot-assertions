@@ -14,3 +14,6 @@ fix_n_sniff: fix sniff
 # Runs phpstan on the source files.
 phpstan:
 	phpstan analyze src --level=9
+
+act:
+	act -P ubuntu-22.04=shivammathur/node:2204 -W '.github/workflows/ci.yml'
