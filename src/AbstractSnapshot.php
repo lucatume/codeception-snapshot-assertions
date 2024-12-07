@@ -146,8 +146,8 @@ class AbstractSnapshot extends Snapshot
 
         $reflection = new ReflectionClass(SnapshotAssertions::class);
         static::$traitMethods = array_map(
-			static fn(ReflectionMethod $method): string => $method->name,
-			$reflection->getMethods()
+            static fn(ReflectionMethod $method): string => $method->name,
+            $reflection->getMethods()
         );
 
         return static::$traitMethods;
