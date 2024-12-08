@@ -36,6 +36,7 @@ class HtmlSnapshot extends StringSnapshot
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function fileExtension(): string
     {
         return 'snapshot.html';
@@ -51,6 +52,7 @@ class HtmlSnapshot extends StringSnapshot
      *
      * @throws RuntimeException If there's an issue during the HTML string parsing.
      */
+    #[\Override]
     protected function assertData($data): void
     {
         if ($this->dataVisitor !== null) {

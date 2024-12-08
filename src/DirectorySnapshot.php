@@ -42,6 +42,7 @@ class DirectorySnapshot extends AbstractSnapshot
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     protected function fetchData(): string|false
     {
         return $this->prepareSnapshotForDump();
@@ -69,6 +70,7 @@ class DirectorySnapshot extends AbstractSnapshot
     /**
      * {@inheritDoc}
      */
+    #[\Override]
     public function prepareSnapshotForDump(): string
     {
         if ($this->preparedSnapshot !== null) {
@@ -103,7 +105,7 @@ class DirectorySnapshot extends AbstractSnapshot
     {
         $fileSectionHeaderStart = sprintf('>>> %s >>>', $fileRelativePath);
         $fileSectionHeaderEnd = sprintf('<<< %s <<<', $fileRelativePath);
-        return array($fileSectionHeaderStart, $fileSectionHeaderEnd);
+        return [$fileSectionHeaderStart, $fileSectionHeaderEnd];
     }
 
     /**
@@ -113,6 +115,7 @@ class DirectorySnapshot extends AbstractSnapshot
      *
      * @throws ReflectionException
      */
+    #[\Override]
     protected function assertData(mixed $data): void
     {
         $currentIterator = $this->buildIterator($this->current);
@@ -120,9 +123,12 @@ class DirectorySnapshot extends AbstractSnapshot
         $root = rtrim($this->current, '\\/');
         /** @var SplFileInfo[] $files */
         $files = iterator_to_array($currentIterator, false);
-        $currentFiles = array_map(static function (SplFileInfo $file) use ($root): string {
-            return '/' . ltrim(str_replace($root, '', $file->getPathname()), '/');
-        }, $files);
+        $currentFiles = array_map(
+            static function (SplFileInfo $file) use ($root): string {
+                return '/' . ltrim(str_replace($root, '', $file->getPathname()), '/');
+            },
+            $files
+        );
 
         usort($currentFiles, 'strcasecmp');
 
@@ -136,9 +142,7 @@ class DirectorySnapshot extends AbstractSnapshot
         $multiIterator->attachIterator(new ArrayIterator($snapshotFiles));
         $sortedFiles = $files;
         $sortedFiles = array_combine(
-            array_map(static function (SplFileInfo $f): string {
-                return $f->getPathname();
-            }, $sortedFiles),
+            array_map(static fn(SplFileInfo $f): string => $f->getPathname(), $sortedFiles),
             $sortedFiles
         );
 
