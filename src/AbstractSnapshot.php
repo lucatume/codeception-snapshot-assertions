@@ -27,6 +27,13 @@ use RuntimeException;
 class AbstractSnapshot extends Snapshot
 {
     /**
+     * The limit of the backtrace to use to build the snapshot file name.
+     *
+     * @var int
+     */
+    protected static int $backtraceLimit = 5;
+
+    /**
      * Keeps a counter for each class, function and data-set combination.
      *
      * @var array<string,array<string,int>>
@@ -39,6 +46,13 @@ class AbstractSnapshot extends Snapshot
      * @var array<string>
      */
     protected static array $traitMethods = [];
+
+    /**
+     * The class that provides the trait methods.
+     *
+     * @var string
+     */
+    protected static string $traitClass = SnapshotAssertions::class;
 
     /**
      * The callback that will be called on each data entry of the snapshot.
@@ -86,13 +100,12 @@ class AbstractSnapshot extends Snapshot
         $traitMethods = static::getTraitMethods();
         $backtrace = array_values(array_filter(
             debug_backtrace(
-                DEBUG_BACKTRACE_IGNORE_ARGS
-                | DEBUG_BACKTRACE_PROVIDE_OBJECT,
-                5
+                DEBUG_BACKTRACE_IGNORE_ARGS | DEBUG_BACKTRACE_PROVIDE_OBJECT,
+                static::$backtraceLimit
             ),
             static fn(array $backtraceEntry): bool => isset($backtraceEntry['class']) && !in_array(
                 $backtraceEntry['class'],
-                [Snapshot::class, static::class, self::class, SnapshotAssertions::class],
+                [Snapshot::class, static::class, self::class, static::$traitClass],
                 true
             ) && !in_array($backtraceEntry['function'], $traitMethods, true)
         ));
@@ -144,7 +157,7 @@ class AbstractSnapshot extends Snapshot
             return static::$traitMethods;
         }
 
-        $reflection = new ReflectionClass(SnapshotAssertions::class);
+        $reflection = new ReflectionClass(static::$traitClass);
         static::$traitMethods = array_map(
             static fn(ReflectionMethod $method): string => $method->name,
             $reflection->getMethods()
