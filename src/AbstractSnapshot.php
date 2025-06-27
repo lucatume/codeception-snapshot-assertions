@@ -151,8 +151,7 @@ class AbstractSnapshot extends Snapshot
                 //@phpstan-ignore-next-line
                 && ($match['object'] instanceof TestCase || $match['object'] instanceof PHPUnit_Framework_TestCase)
             ) {
-                //@phpstan-ignore-next-line
-                /** @var TestCase|PHPUnit_Framework_TestCase $testCase */
+                /** @var TestCase $testCase */
                 $testCase = $match['object'];
                 //@phpstan-ignore-next-line
                 $dataName = $this->getDataName($testCase);
