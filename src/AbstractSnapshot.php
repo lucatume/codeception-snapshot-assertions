@@ -108,6 +108,7 @@ class AbstractSnapshot extends Snapshot
                     continue;
                 }
 
+                //@phpstan-ignore-next-line
                 if ($entry['class'] === TestCase::class || $entry['class'] === PHPUnit_Framework_TestCase::class) {
                     if (!isset($backtrace[$index -1]['class'], $backtrace[$index-1]['function'], $entry['object'])) {
                         continue;
@@ -121,6 +122,7 @@ class AbstractSnapshot extends Snapshot
                         -- $matchIndex;
                     } while (! (
                         is_a($matchClass, TestCase::class, true)
+                        //@phpstan-ignore-next-line
                         || is_a($matchClass, PHPUnit_Framework_TestCase::class, true) )
                     );
 
@@ -132,6 +134,7 @@ class AbstractSnapshot extends Snapshot
                 throw new RuntimeException('Could not find a PHPUnit test case instance in the call stack.');
             }
 
+            //@phpstan-ignore-next-line
             $class = $match['class'];
             $function = $match['function'];
             $classFrags = explode('\\', $class);
@@ -145,10 +148,13 @@ class AbstractSnapshot extends Snapshot
             $classDir = dirname($classFile);
             $dataSetFrag = '';
             if (isset($match['object'])
+                //@phpstan-ignore-next-line
                 && ($match['object'] instanceof TestCase || $match['object'] instanceof PHPUnit_Framework_TestCase)
             ) {
+                //@phpstan-ignore-next-line
                 /** @var TestCase|PHPUnit_Framework_TestCase $testCase */
                 $testCase = $match['object'];
+                //@phpstan-ignore-next-line
                 $dataName = $this->getDataName($testCase);
                 if ($dataName !== '') {
                     $dataSetFrag = '__' . $dataName;
