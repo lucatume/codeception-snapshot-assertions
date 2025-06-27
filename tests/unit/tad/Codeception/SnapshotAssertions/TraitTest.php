@@ -42,7 +42,7 @@ class TraitTest extends BaseTestCase
         // $this->assertFileExists(__DIR__ . '/__snapshots__/TraitTest__should_correctly_name_snapshot_files__1.snapshot.txt');
     }
 
-    public static function names(): array
+    public static function names()
     {
         return [
             'one'   => [ 'one' ],
@@ -57,7 +57,7 @@ class TraitTest extends BaseTestCase
      * @dataProvider names
      * @test
      */
-    public function should_correctly_name_snapshot_files_with_dataset(string $name)
+    public function should_correctly_name_snapshot_files_with_dataset($name)
     {
         // The snapshot does not exist, and it will be created.
         $this->assertMatchesCustomSnapshot('custom');
@@ -73,7 +73,7 @@ class TraitTest extends BaseTestCase
      * @dataProvider names
      * @test
      */
-    public function should_correctly_name_snapshot_files_with_dataset_when_trait_using_trait(string $name)
+    public function should_correctly_name_snapshot_files_with_dataset_when_trait_using_trait($name)
     {
         // The snapshot does not exist, and it will be created.
         // The snapshot does not exist, and it will be created.
