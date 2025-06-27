@@ -152,8 +152,7 @@ class ConfigurationTest extends \Codeception\Test\Unit
      *
      * @test
      */
-    public function should_prepend_the_version_string_to_the_snapshot_file_name_if_set_in_the_codeception_configuration(
-    )
+    public function should_prepend_the_version_string_to_the_snapshot_file_name_if_set_in_the_codeception_configuration()
     {
         $this->mockCodeceptionConfig([
             'snapshot' => [

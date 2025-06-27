@@ -95,24 +95,35 @@ class AbstractSnapshot extends Snapshot
     protected function getFileName()
     {
         if (empty($this->fileName)) {
-            $traitMethods = static::getTraitMethods();
-            $backtrace = array_values(array_filter(
-                debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS
-                    | DEBUG_BACKTRACE_PROVIDE_OBJECT, 5),
-                static function (array $backtraceEntry) use ($traitMethods) {
-                    return isset($backtraceEntry['class']) && !in_array(
-                        $backtraceEntry['class'],
-                        [Snapshot::class, static::class, self::class, SnapshotAssertions::class],
-                        true
-                    ) && !in_array($backtraceEntry['function'], $traitMethods, true);
+            $backtrace = debug_backtrace(
+                DEBUG_BACKTRACE_IGNORE_ARGS
+                | DEBUG_BACKTRACE_PROVIDE_OBJECT,
+                20
+            );
+            $match = null;
+            $object = null;
+            foreach ($backtrace as $index => $entry) {
+                if (!isset($entry['class'])) {
+                    continue;
                 }
-            ));
-            $class = isset($backtrace[0]['class']) ? $backtrace[0]['class'] : '';
 
-            if (empty($class)) {
-                throw new RuntimeException('Cannot get ithe class name.');
+                if ($entry['class'] === TestCase::class) {
+                    if (!isset($backtrace[$index -1]['class'], $backtrace[$index-1]['function'], $entry['object'])) {
+                        continue;
+                    }
+
+                    $object = $entry['object'];
+                    $match = $backtrace[$index-1];
+                    break;
+                }
             }
 
+            if ($match === null || $object === null) {
+                throw new RuntimeException('Could not find a PHPUnit test case instance in the call stack.');
+            }
+
+            $class = $match['class'];
+            $function = $match['function'];
             $classFrags = explode('\\', $class);
             $classBasename = array_pop($classFrags);
             $classFile = (new ReflectionClass($class))->getFileName();
@@ -122,16 +133,16 @@ class AbstractSnapshot extends Snapshot
             }
 
             $classDir = dirname($classFile);
-            $function = $backtrace[0]['function'];
             $dataSetFrag = '';
-            if (isset($backtrace[0]['object']) && $backtrace[0]['object'] instanceof TestCase) {
+            if (isset($match['object']) && $match['object'] instanceof TestCase) {
                 /** @var TestCase $testCase */
-                $testCase = $backtrace[0]['object'];
+                $testCase = $match['object'];
                 $dataName = $this->getDataName($testCase);
                 if ($dataName !== '') {
-                    $dataSetFrag = '__'.$dataName;
+                    $dataSetFrag = '__' . $dataName;
                 }
             }
+
             $fileName = sprintf(
                 '%s__%s%s%s__%d.%s',
                 $classBasename,

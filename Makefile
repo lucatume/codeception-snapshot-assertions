@@ -9,7 +9,7 @@ fix:
 	vendor/bin/phpcbf --colors -p --standard=PSR2 -s src tests
 
 # Fix and then sniff the source files.
-fix_n_sniff: cs_fix cs_sniff
+fix_n_sniff: fix sniff
 
 # Runs phpstan on the source files.
 phpstan:
