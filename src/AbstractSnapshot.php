@@ -14,6 +14,7 @@ use Codeception\Util\ReflectionHelper;
 use Exception;
 use PHPUnit\Framework\AssertionFailedError;
 use PHPUnit\Framework\TestCase;
+use PHPUnit_Framework_TestCase;
 use ReflectionClass;
 use ReflectionException;
 use ReflectionMethod;
@@ -134,8 +135,10 @@ class AbstractSnapshot extends Snapshot
 
             $classDir = dirname($classFile);
             $dataSetFrag = '';
-            if (isset($match['object']) && $match['object'] instanceof TestCase) {
-                /** @var TestCase $testCase */
+            if (isset($match['object'])
+                && ($match['object'] instanceof TestCase || $match['object'] instanceof PHPUnit_Framework_TestCase)
+            ) {
+                /** @var TestCase|PHPUnit_Framework_TestCase $testCase */
                 $testCase = $match['object'];
                 $dataName = $this->getDataName($testCase);
                 if ($dataName !== '') {
