@@ -108,13 +108,22 @@ class AbstractSnapshot extends Snapshot
                     continue;
                 }
 
-                if ($entry['class'] === TestCase::class) {
+                if ($entry['class'] === TestCase::class || $entry['class'] === PHPUnit_Framework_TestCase::class) {
                     if (!isset($backtrace[$index -1]['class'], $backtrace[$index-1]['function'], $entry['object'])) {
                         continue;
                     }
 
-                    $object = $entry['object'];
-                    $match = $backtrace[$index-1];
+                    $matchIndex = $index - 1;
+                    do {
+                        $object     = $entry['object'];
+                        $match      = $backtrace[ $matchIndex ];
+                        $matchClass = isset($match['class']) ? $match['class'] : null;
+                        -- $matchIndex;
+                    } while (! (
+                        is_a($matchClass, TestCase::class, true)
+                        || is_a($matchClass, PHPUnit_Framework_TestCase::class, true) )
+                    );
+
                     break;
                 }
             }
