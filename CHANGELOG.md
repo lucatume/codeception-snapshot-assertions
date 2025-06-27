@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Snapshot file naming issue when using assertions in a trait.
+
 ## [1.3.0] - 2024-12-08
 
 ### Changed
