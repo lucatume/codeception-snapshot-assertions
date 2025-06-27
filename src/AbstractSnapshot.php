@@ -153,7 +153,6 @@ class AbstractSnapshot extends Snapshot
             ) {
                 /** @var TestCase $testCase */
                 $testCase = $match['object'];
-                //@phpstan-ignore-next-line
                 $dataName = $this->getDataName($testCase);
                 if ($dataName !== '') {
                     $dataSetFrag = '__' . $dataName;
