@@ -26,6 +26,20 @@ use RuntimeException;
 class AbstractSnapshot extends Snapshot
 {
     /**
+     * The limit of the backtrace to use to build the snapshot file name.
+     *
+     * @var int
+     */
+    protected static int $backtraceLimit = 5;
+
+	/**
+     * The class that provides the trait methods.
+     *
+     * @var string
+     */
+    protected static string $traitClass = SnapshotAssertions::class;
+
+    /**
      * Keeps a counter for each class, function and data-set combination.
      *
      * @var array<string,array<string,int>>
@@ -97,12 +111,14 @@ class AbstractSnapshot extends Snapshot
         if (empty($this->fileName)) {
             $traitMethods = static::getTraitMethods();
             $backtrace = array_values(array_filter(
-                debug_backtrace(DEBUG_BACKTRACE_IGNORE_ARGS
-                    | DEBUG_BACKTRACE_PROVIDE_OBJECT, 5),
+                debug_backtrace(
+                    DEBUG_BACKTRACE_IGNORE_ARGS | DEBUG_BACKTRACE_PROVIDE_OBJECT,
+                    static::$backtraceLimit
+                ),
                 static function (array $backtraceEntry) use ($traitMethods) {
                     return isset($backtraceEntry['class']) && !in_array(
                         $backtraceEntry['class'],
-                        [Snapshot::class, static::class, self::class, SnapshotAssertions::class],
+                        [Snapshot::class, static::class, self::class, static::$traitClass],
                         true
                     ) && !in_array($backtraceEntry['function'], $traitMethods, true);
                 }
@@ -160,7 +176,7 @@ class AbstractSnapshot extends Snapshot
             return static::$traitMethods;
         }
 
-        $reflection = new ReflectionClass(SnapshotAssertions::class);
+        $reflection = new ReflectionClass(static::$traitClass);
         static::$traitMethods = array_map(function (ReflectionMethod $method) {
             return $method->name;
         }, $reflection->getMethods());
