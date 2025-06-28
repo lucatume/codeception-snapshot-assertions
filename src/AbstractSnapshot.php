@@ -168,7 +168,7 @@ class AbstractSnapshot extends Snapshot
     }
 
     /**
-     * Returns the counter, an integer, for a class, methdo and data-set combination.
+     * Returns the counter, an integer, for a class, method and data-set combination.
      *
      * @param string $class       The class to return the counter for.
      * @param string $function    The function/method to return the counter for.
