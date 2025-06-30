@@ -337,3 +337,46 @@ public function test_json_object(){
         $firstSnapshot->assert();
 }
 ```
+
+## Adding new assertions
+
+The assertion types provided by the library might not satisfy all the possible use cases; in those instances adding new snapshot assertions can be done extending or composing the existing assertions.
+
+In the following example the project requires testing SVG images and, to make it easier to preview and check them, the desire is to have the snapshot file extension to be `.svg` instead of `.html`:
+
+```php
+// The new assertion trait.
+trait SVGSnapshotAssertions
+{
+	protected function assertMatchesSvgSnapshot($current, callable $dataVisitor = null)
+	{
+	    // The example uses an anonymous class for brevity, but it could be a regular class.
+		$svgSnapshot = new class($current) extends HtmlSnapshot {
+			public function fileExtension():string
+			{
+				return 'snapshot.svg';
+			}
+		};
+
+		if ($dataVisitor !== null) {
+			$svgSnapshot->setDataVisitor($dataVisitor);
+		}
+
+		$svgSnapshot->assert();
+	}
+}
+
+// The test case.
+class SvgTest extends Unit {
+	use SVGSnapshotAssertions;
+
+	public function test_svg() {
+		$exampleSvg = '<svg><circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" /></svg>';
+
+        // Will create a file called 'SvgTest__test_svg__0.snapshot.svg'.
+		$this->assertMatchesSvgSnapshot( $exampleSvg);
+	}
+}
+```
+
+
