@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [1.4.0] - 2025-07-01
+
+### Changed
+
+- White spaces in names of datasets will be converted to underscores to improve the snapshot copy-and-paste-ability.
+
 ## [1.3.1] - 2025-06-27
 
 ### Fixed
