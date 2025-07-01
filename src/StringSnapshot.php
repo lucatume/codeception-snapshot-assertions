@@ -68,7 +68,7 @@ class StringSnapshot extends AbstractSnapshot
     /**
      *
      *
-     * @param  mixed  $data  The data to check for emptyness.
+     * @param  mixed  $data  The data to check for emptiness.
      *
      * @return bool
      * @since TBD

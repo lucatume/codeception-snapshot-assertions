@@ -155,6 +155,7 @@ class AbstractSnapshot extends Snapshot
                 $testCase = $match['object'];
                 $dataName = $this->getDataName($testCase);
                 if ($dataName !== '') {
+                    $dataName = preg_replace('/\\s+/', '_', $dataName);
                     $dataSetFrag = '__' . $dataName;
                 }
             }
@@ -196,7 +197,7 @@ class AbstractSnapshot extends Snapshot
     }
 
     /**
-     * Returns the counter, an integer, for a class, methdo and data-set combination.
+     * Returns the counter, an integer, for a class, method and data-set combination.
      *
      * @param  string  $class        The class to return the counter for.
      * @param  string  $function     The function/method to return the counter for.
@@ -340,7 +341,7 @@ class AbstractSnapshot extends Snapshot
     /**
      * Whether the data is empty or not.
      *
-     * Extending classes can override this method to implement more sofisticated checks.
+     * Extending classes can override this method to implement more sophisticated checks.
      *
      * @param  mixed  $data  The data to check.
      *
