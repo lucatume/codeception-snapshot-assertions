@@ -127,6 +127,8 @@ class AbstractSnapshot extends Snapshot
             $testCase = $match['object'];
             $dataName = $this->getDataName($testCase);
             if ($dataName !== '') {
+                // Replace white spaces with underscore.
+                $dataName = preg_replace('/\s+/', '_', $dataName);
                 $dataSetFrag = '__' . $dataName;
             }
         }

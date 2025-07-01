@@ -378,5 +378,3 @@ class SvgTest extends Unit {
 	}
 }
 ```
-
-
